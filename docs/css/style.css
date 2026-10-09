@@ -102,7 +102,6 @@ kbd{font:15px var(--pix);color:var(--text);background:var(--surface);border:2px 
 
 .team{background:#fff;color:var(--ink);padding:44px 24px;text-align:center;border:2px solid var(--line);box-shadow:6px 6px 0 var(--line)}
 .team img{width:min(520px,100%);height:auto;margin:0 auto 20px}
-.team p{font:17px var(--pix)}
 
 .faq details{border-bottom:1px solid var(--line);padding:16px 0}
 .faq summary{cursor:pointer;font:19px var(--pix);list-style:none;display:flex;justify-content:space-between;gap:12px}

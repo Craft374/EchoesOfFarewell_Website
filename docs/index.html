@@ -18,18 +18,15 @@
   콘텐츠 수정 가이드
   - 한/영 문구는 <span class="ko">…</span><span class="en">…</span> 쌍으로 적습니다.
   - TODO 표시가 있는 링크(#)는 실제 주소로 바꿔 주세요: 다운로드(구글 드라이브), 피드백 폼, 이메일.
-  - 행사 안내 배너: #event 의 hidden 속성을 지우고 문구를 적으면 표시됩니다.
+  - 행사 안내 팝업: #notice 의 문구를 수정하세요. 팝업을 없애려면 #notice 를 지우면 됩니다.
 -->
-
-<div id="event" class="event" hidden>
-  <span class="ko">행사 안내 문구를 여기에 적어 주세요.</span><span class="en">Event notice goes here.</span>
-</div>
 
 <header class="nav" id="top">
   <a class="brand" href="#top" aria-label="Echoes of Farewell"><img src="assets/img/icon.png" alt="" width="28" height="28"><b>EOF</b></a>
   <nav aria-label="sections">
     <a href="#about"><span class="ko">소개</span><span class="en">About</span></a>
     <a href="#features"><span class="ko">특징</span><span class="en">Features</span></a>
+    <a href="#system"><span class="ko">시스템</span><span class="en">Systems</span></a>
     <a href="#gallery"><span class="ko">갤러리</span><span class="en">Gallery</span></a>
     <a href="#controls"><span class="ko">조작법</span><span class="en">Controls</span></a>
     <a href="#download"><span class="ko">다운로드</span><span class="en">Download</span></a>
@@ -53,15 +50,7 @@
       <a class="btn" href="#about"><span class="ko">게임 소개</span><span class="en">About the game</span></a>
     </p>
   </div>
-  <div class="ground" aria-hidden="true">
-    <i class="walker hive"></i>
-    <i class="walker hfly"></i>
-    <i class="walker golem"></i>
-    <i class="walker boss"></i>
-    <i class="walker bug"></i>
-    <i class="walker fly"></i>
-    <i class="walker player"></i>
-  </div>
+  <div class="ground" id="stage" aria-hidden="true"></div>
 </section>
 
 <!-- ABOUT -->
@@ -92,7 +81,7 @@
   <h2 class="reveal"><span class="ko">세 가지 핵심 재미</span><span class="en">Three things that define the game</span></h2>
 
   <article class="feat reveal">
-    <video muted loop playsinline preload="none" poster="assets/img/poster-battle.jpg" data-src="assets/video/battle.mp4"></video>
+    <div class="vid"><video muted loop playsinline preload="none" poster="assets/img/poster-battle.jpg" data-src="assets/video/battle.mp4"></video></div>
     <div>
       <span class="num">01</span>
       <h3><span class="ko">성취감 있는 고난이도</span><span class="en">Hard, and worth it</span></h3>
@@ -101,7 +90,7 @@
   </article>
 
   <article class="feat flip reveal">
-    <img src="assets/img/shots/s1.webp" alt="" loading="lazy" width="1280" height="1217" class="shot">
+    <div class="vid"><video muted loop playsinline preload="none" poster="assets/img/poster-golem.jpg" data-src="assets/video/golem.mp4"></video></div>
     <div>
       <span class="num">02</span>
       <h3><span class="ko">카드로 만드는 다양한 전투</span><span class="en">Card-driven combat variety</span></h3>
@@ -110,7 +99,7 @@
   </article>
 
   <article class="feat reveal">
-    <video muted loop playsinline preload="none" poster="assets/img/poster-parry.jpg" data-src="assets/video/parry.mp4"></video>
+    <div class="vid"><video muted loop playsinline preload="none" poster="assets/img/poster-parry.jpg" data-src="assets/video/parry.mp4"></video></div>
     <div>
       <span class="num">03</span>
       <h3><span class="ko">타격감 있는 패링</span><span class="en">Satisfying parries</span></h3>
@@ -119,16 +108,30 @@
   </article>
 </section>
 
+<!-- SYSTEM -->
+<section class="sec" id="system">
+  <p class="eyebrow reveal">03 — <span class="ko">게임 시스템</span><span class="en">SYSTEMS</span></p>
+  <h2 class="reveal"><span class="ko">받아치고, 모으고, 터뜨린다</span><span class="en">Parry. Gather. Unleash.</span></h2>
+  <div class="cards reveal">
+    <article><b class="chip">F</b><h3><span class="ko">패링</span><span class="en">Parry</span></h3><p><span class="ko">적이 공격하는 타이밍에 맞춰 F키를 누르면 공격을 받아치며 영혼불 1개를 얻습니다.</span><span class="en">Press F right as an enemy strikes to deflect the attack and earn one soul fire.</span></p></article>
+    <article><b class="chip">F ···</b><h3><span class="ko">방어와 인내력</span><span class="en">Guard &amp; Endurance</span></h3><p><span class="ko">패링에 실패하면 방어 상태가 됩니다. 막을수록 인내력바가 차고, 가득 차면 잠시 마비되어 피해를 1.5배로 받습니다.</span><span class="en">Miss a parry and you guard instead. Blocking fills the endurance bar; when it maxes out you are stunned and take 1.5× damage.</span></p></article>
+    <article><b class="chip">&gt;&gt;</b><h3><span class="ko">완벽한 회피</span><span class="en">Perfect Dodge</span></h3><p><span class="ko">공격 타이밍에 맞춰 회피하면 영혼불 1개를 얻습니다. 스태미나가 바닥나면 회복될 때까지 회피할 수 없습니다.</span><span class="en">Dodge with perfect timing to earn a soul fire. If stamina runs out, you cannot dodge until it recovers.</span></p></article>
+    <article><b class="chip">3</b><h3><span class="ko">영혼불과 참격</span><span class="en">Soul Fire &amp; Soul Slash</span></h3><p><span class="ko">영혼불이 3개 이상이면 공격이 자동으로 강력한 참격이 됩니다. 영혼불이 가득 차면 영혼모드로 각성합니다.</span><span class="en">With three or more soul fires, your next attack becomes a powerful slash. Fill them all to awaken Soul Mode.</span></p></article>
+    <article><b class="chip">CARD</b><h3><span class="ko">카드</span><span class="en">Cards</span></h3><p><span class="ko">스테이지를 클리어하거나 석상과 상호작용하면 카드를 얻습니다. 카드에 따라 전투 방식과 성능이 달라집니다.</span><span class="en">Clear a stage or interact with a statue to gain a card. Cards change how you fight and how strong you are.</span></p></article>
+    <article><b class="chip">E</b><h3><span class="ko">석상과 라이프</span><span class="en">Statues &amp; Lives</span></h3><p><span class="ko">마지막으로 상호작용한 석상에서 되살아납니다. 라이프를 모두 잃으면 이전 석상으로 돌아가고 카드 1장을 잃습니다.</span><span class="en">You respawn at the last statue you touched. Lose all lives and you return to the previous statue, losing a card.</span></p></article>
+  </div>
+</section>
+
 <!-- GALLERY -->
 <section class="sec" id="gallery">
-  <p class="eyebrow reveal">03 — <span class="ko">갤러리</span><span class="en">GALLERY</span></p>
+  <p class="eyebrow reveal">04 — <span class="ko">갤러리</span><span class="en">GALLERY</span></p>
   <h2 class="reveal"><span class="ko">플레이 장면</span><span class="en">In-game moments</span></h2>
   <div class="masonry reveal" id="shots"></div>
 </section>
 
 <!-- CONTROLS -->
 <section class="sec" id="controls">
-  <p class="eyebrow reveal">04 — <span class="ko">조작법 · 사양</span><span class="en">CONTROLS &amp; SPECS</span></p>
+  <p class="eyebrow reveal">05 — <span class="ko">조작법 · 사양</span><span class="en">CONTROLS &amp; SPECS</span></p>
   <div class="two reveal">
     <div>
       <h2><span class="ko">조작법</span><span class="en">Controls</span></h2>
@@ -153,7 +156,7 @@
 
 <!-- DOWNLOAD -->
 <section class="sec dl" id="download">
-  <p class="eyebrow reveal">05 — <span class="ko">다운로드</span><span class="en">DOWNLOAD</span></p>
+  <p class="eyebrow reveal">06 — <span class="ko">다운로드</span><span class="en">DOWNLOAD</span></p>
   <h2 class="reveal"><span class="ko">데모를 플레이해 보세요</span><span class="en">Play the demo</span></h2>
   <p class="lead reveal"><span class="ko">Windows / macOS 데모 빌드를 구글 드라이브로 배포하고 있습니다.</span><span class="en">The Windows / macOS demo build is distributed through Google Drive.</span></p>
   <p class="cta reveal">
@@ -162,9 +165,18 @@
   </p>
 </section>
 
+<!-- EVENTS -->
+<section class="sec" id="events">
+  <p class="eyebrow reveal">07 — <span class="ko">행사 · 수상</span><span class="en">EVENTS &amp; AWARDS</span></p>
+  <ul class="timeline reveal">
+    <li><b>UNICON</b><span><span class="ko">UNIDEV(전국대학생게임개발연합회) 주최 게임 전시회 · 인기상 수상</span><span class="en">UNIDEV game exhibition · Popular Choice Award</span></span></li>
+    <li><b>MANACON</b><span><span class="ko">고려대학교 세종캠퍼스 주최 게임 전시회 · 전시</span><span class="en">Korea University Sejong campus game exhibition · Exhibited</span></span></li>
+  </ul>
+</section>
+
 <!-- TEAM -->
 <section class="sec" id="team">
-  <p class="eyebrow reveal">06 — <span class="ko">개발팀</span><span class="en">TEAM</span></p>
+  <p class="eyebrow reveal">08 — <span class="ko">개발팀</span><span class="en">TEAM</span></p>
   <h2 class="sr">Team A&gt;S&gt;D&gt;F_</h2>
   <div class="team reveal">
     <img src="assets/img/team.png" alt="TEAM A&gt;S&gt;D&gt;F_" width="1000" height="163" loading="lazy">
@@ -174,19 +186,21 @@
 
 <!-- FAQ -->
 <section class="sec" id="faq">
-  <p class="eyebrow reveal">07 — FAQ</p>
+  <p class="eyebrow reveal">09 — FAQ</p>
   <h2 class="sr">FAQ</h2>
   <div class="faq reveal">
     <details><summary><span class="ko">무료인가요?</span><span class="en">Is it free?</span></summary><p><span class="ko">현재 데모는 무료로 받을 수 있습니다. 정식 가격은 아직 정해지지 않았습니다.</span><span class="en">The demo is free to download. The final price has not been decided yet.</span></p></details>
     <details><summary><span class="ko">어떤 플랫폼에서 즐길 수 있나요?</span><span class="en">Which platforms are supported?</span></summary><p><span class="ko">Windows와 macOS를 지원합니다.</span><span class="en">Windows and macOS.</span></p></details>
     <details><summary><span class="ko">영어를 지원하나요?</span><span class="en">Does the game support English?</span></summary><p><span class="ko">현재 게임은 한국어만 지원합니다. 이 웹사이트는 한국어와 영어로 볼 수 있습니다.</span><span class="en">The game is currently Korean only. This website is available in Korean and English.</span></p></details>
+    <details><summary><span class="ko">패링을 꼭 해야 하나요?</span><span class="en">Do I have to parry?</span></summary><p><span class="ko">패링 외의 방법으로도 클리어할 수 있지만, 패링으로 플레이할 때보다 시간이 더 걸리도록 설계되어 있습니다.</span><span class="en">You can clear the game without parrying, but doing so takes noticeably longer than playing around the parry.</span></p></details>
+    <details><summary><span class="ko">카드는 어떻게 얻나요?</span><span class="en">How do I get cards?</span></summary><p><span class="ko">스테이지를 클리어하거나 맵에서 발견한 석상과 상호작용하면 카드 1장을 얻습니다.</span><span class="en">Clear a stage or interact with a statue found on the map to receive one card.</span></p></details>
     <details><summary><span class="ko">정식 출시는 언제인가요?</span><span class="en">When is the full release?</span></summary><p><span class="ko">아직 정해지지 않았습니다. 소식은 이 페이지에 먼저 공개됩니다.</span><span class="en">Not decided yet. News will appear on this page first.</span></p></details>
   </div>
 </section>
 
 <!-- CONTACT -->
 <section class="sec" id="contact">
-  <p class="eyebrow reveal">08 — <span class="ko">문의 · 피드백</span><span class="en">CONTACT &amp; FEEDBACK</span></p>
+  <p class="eyebrow reveal">10 — <span class="ko">문의 · 피드백</span><span class="en">CONTACT &amp; FEEDBACK</span></p>
   <h2 class="reveal"><span class="ko">플레이 후기를 들려주세요</span><span class="en">Tell us what you think</span></h2>
   <p class="cta reveal">
     <!-- TODO: 구글 폼 링크로 교체 -->
@@ -202,8 +216,21 @@
   <p>© 2026 TEAM A&gt;S&gt;D&gt;F_ · Echoes of Farewell</p>
 </footer>
 
+<dialog id="notice" aria-labelledby="notice-t">
+  <p class="eyebrow"><span class="ko">NOTICE · 행사 안내</span><span class="en">NOTICE · EVENT</span></p>
+  <h2 id="notice-t"><span class="ko">대콘페에서 만나요</span><span class="en">See you at 대콘페</span></h2>
+  <!-- TODO: 일시·장소·부스 번호가 정해지면 아래 문구에 적어 주세요 -->
+  <p><span class="ko">Echoes of Farewell 부스에서 데모를 직접 플레이해 보세요. 일시와 부스 위치는 확정되는 대로 이곳에 안내드립니다.</span><span class="en">Come play the Echoes of Farewell demo at our booth. Date and booth location will be posted here once confirmed.</span></p>
+  <div class="row">
+    <button type="button" class="btn" data-skip><span class="ko">오늘은 그만 보기</span><span class="en">Don't show today</span></button>
+    <button type="button" class="btn primary" data-close><span class="ko">닫기</span><span class="en">Close</span></button>
+  </div>
+</dialog>
+
 <dialog id="lb" aria-label="screenshot"><img alt=""><button type="button" aria-label="close">×</button></dialog>
 
 <script src="js/main.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/stage.js"></script>
 </body>
 </html>

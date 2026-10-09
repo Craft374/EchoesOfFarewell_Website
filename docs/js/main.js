@@ -10,7 +10,7 @@
   const conn = navigator.connection || {};
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const slow = reduced || conn.saveData || /(^|-)2g$/.test(conn.effectiveType || '');
-  if (reduced || slow) root.classList.add('lite');
+  if (slow) root.classList.add('lite');
 
   // 언어 (저장값 > 브라우저 언어)
   const setLang = (l) => {
@@ -29,14 +29,29 @@
   // 갤러리 + 라이트박스
   const shots = $('#shots');
   const lb = $('#lb');
-  for (let i = 2; i <= 12; i++) {
+  for (let i = 1; i <= 12; i++) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.innerHTML = `<img src="assets/img/shots/s${i}.webp" alt="Gameplay screenshot ${i - 1}" loading="lazy">`;
+    b.innerHTML = `<img src="assets/img/shots/s${i}.webp" alt="Gameplay screenshot ${i}" loading="lazy">`;
     b.onclick = () => { const im = $('img', lb); im.src = `assets/img/shots/s${i}.webp`; im.alt = $('img', b).alt; lb.showModal(); };
     shots.append(b);
   }
   lb.onclick = () => lb.close(); // 어디를 눌러도 닫기 (닫기 버튼 포함)
+
+  // 행사 안내 팝업: 닫으면 이번 접속 동안, '오늘은 그만 보기'면 오늘 하루 숨김
+  const notice = $('#notice');
+  if (notice) {
+    const today = new Date().toDateString();
+    const hidden = safe(() => localStorage.getItem('eof-notice') === today || sessionStorage.getItem('eof-notice'));
+    if (!hidden) setTimeout(() => !notice.open && notice.showModal(), 700);
+    notice.addEventListener('close', () => safe(() => sessionStorage.setItem('eof-notice', '1'))); // 닫으면 이번 접속 동안 숨김
+    $('[data-close]', notice).onclick = () => notice.close();
+    $('[data-skip]', notice).onclick = () => { safe(() => localStorage.setItem('eof-notice', today)); notice.close(); };
+    notice.addEventListener('click', (e) => { // 바깥(배경) 클릭 — 안쪽 여백은 제외
+      const r = notice.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) notice.close();
+    });
+  }
 
   // 스크롤 등장 + 영상 지연 로딩
   const io = new IntersectionObserver((es) => es.forEach((e) => {
@@ -44,12 +59,18 @@
   }), { threshold: 0.12 });
   $$('.reveal').forEach((el) => io.observe(el));
 
+  // 반복 구간이 튀지 않게: 시작은 페이드 인, 끝은 페이드 아웃 (배경은 검정)
+  const fade = (v) => {
+    const d = v.duration, t = v.currentTime;
+    v.style.opacity = d ? Math.max(0, Math.min(1, t / 0.5, (d - t) / 0.5)) : 1;
+    if (!v.paused) requestAnimationFrame(() => fade(v));
+  };
   const vio = new IntersectionObserver((es) => es.forEach((e) => {
     const v = e.target;
     if (e.isIntersecting) {
       if (!v.src) v.src = v.dataset.src;
-      v.play().catch(() => {});
-    } else v.pause();
+      v.play().then(() => fade(v)).catch(() => {});
+    } else { v.pause(); v.style.opacity = ''; }
   }), { threshold: 0.25 });
   if (!slow) $$('video[data-src]').forEach((v) => vio.observe(v));
   else $$('video[data-src]').forEach((v) => { v.controls = true; v.src = v.dataset.src; }); // preload=none 이라 재생 버튼을 눌러야 받는다

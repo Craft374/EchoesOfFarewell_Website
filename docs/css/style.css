@@ -1,4 +1,4 @@
-@font-face{font-family:"DungGeunMo";src:url("../assets/font/DungGeunMo.otf") format("opentype");font-display:swap}
+@font-face{font-family:"DungGeunMo";src:url("../assets/font/DungGeunMo.woff") format("woff");font-display:swap}
 
 :root{
   --bg:#0a120f; --surface:#111c17; --line:#22342b;
@@ -48,15 +48,22 @@ a{color:inherit}
 .btn.primary:hover{box-shadow:2px 2px 0 var(--spirit-d)}
 .btn.big{font-size:20px;padding:16px 34px}
 
-/* hero ground + walkers (92px frames) */
-.ground{position:absolute;left:0;right:0;bottom:0;height:70px;z-index:-1;pointer-events:none}
-.walker{position:absolute;bottom:6px;width:92px;height:92px;background-repeat:no-repeat;background-size:auto 100%;image-rendering:pixelated}
-.bug{background-image:url("../assets/img/sprites/bug.png");width:92px;left:-100px;animation:step .7s steps(6) infinite,walk 38s linear infinite}
-.fly{background-image:url("../assets/img/sprites/fly.png");bottom:150px;left:20%;opacity:.9;animation:flap .3s steps(3) infinite,hover 7s ease-in-out infinite}
-@keyframes step{to{background-position:-552px 0}}
-@keyframes flap{to{background-position:-276px 0}}
+/* hero ground + 캐릭터 (스프라이트 스트립: --n 프레임, --w/--h 한 프레임 크기, --k 화면 배율) */
+.ground{--k:1;position:absolute;left:0;right:0;bottom:0;height:70px;z-index:-1;pointer-events:none}
+.walker{--t:.7s;position:absolute;bottom:6px;width:calc(var(--w)*var(--k));height:calc(var(--h)*var(--k));background:var(--img) 0 0/auto 100% no-repeat;image-rendering:pixelated;animation:cyc var(--t) steps(var(--n)) infinite}
+.bug{--img:url("../assets/img/sprites/bug.png");--w:92px;--h:92px;--n:6;left:-100px;animation:cyc var(--t) steps(var(--n)) infinite,walk 38s linear infinite}
+.player{--img:url("../assets/img/sprites/player.webp");--w:80px;--h:90px;--n:6;--t:.6s;left:-100px;z-index:2;animation:cyc var(--t) steps(var(--n)) infinite,walk 15s linear infinite -4s}
+.fly{--img:url("../assets/img/sprites/fly.png");--w:92px;--h:92px;--n:3;--t:.3s;bottom:150px;left:20%;opacity:.9;animation:cyc var(--t) steps(var(--n)) infinite,hover 7s ease-in-out infinite}
+.golem{--img:url("../assets/img/sprites/golem.webp");--w:129px;--h:127px;--n:6;--t:1.4s;left:20%;image-rendering:auto}
+.boss{--img:url("../assets/img/sprites/boss.webp");--w:170px;--h:174px;--n:10;--t:1.6s;right:6%;image-rendering:auto}
+.hive{--img:url("../assets/img/sprites/hive.webp");--w:100px;--h:125px;--n:2;--t:2.4s;left:6%;image-rendering:auto}
+.hfly{--img:url("../assets/img/sprites/hfly.webp");--w:63px;--h:56px;--n:3;--t:.3s;left:calc(6% + 70px);bottom:110px;image-rendering:auto;animation:cyc var(--t) steps(var(--n)) infinite,hover 5s ease-in-out infinite}
+@keyframes cyc{to{background-position:calc(var(--w)*var(--k)*var(--n)*-1) 0}}
 @keyframes walk{to{transform:translateX(calc(100vw + 200px))}}
-@keyframes hover{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,-34px)}}
+@keyframes hover{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,-26px)}}
+@media(max-width:1000px){.ground{--k:.75}.hero-body{padding-bottom:150px}}
+@media(max-width:700px){.ground{--k:.62}.hero-body{padding-bottom:140px}}
+@media(max-width:560px){.golem{display:none}}
 
 /* spirit particles */
 .spirits{position:absolute;inset:0;z-index:-1;pointer-events:none}
@@ -134,8 +141,9 @@ dialog button{position:absolute;top:-14px;right:-14px;width:36px;height:36px;fon
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .walker,.spirits i{animation:none}
+  .bug,.player{display:none}
   .js .reveal{opacity:1;transform:none;transition:none}
 }
-.lite .spirits,.lite .fly{display:none}
+.lite .spirits,.lite .fly,.lite .hfly{display:none}
 
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}

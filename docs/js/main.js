@@ -41,9 +41,10 @@
   // 행사 안내 팝업: 닫으면 이번 접속 동안, '오늘은 그만 보기'면 오늘 하루 숨김
   const notice = $('#notice');
   if (notice) {
+    const expired = new Date() >= new Date(notice.dataset.until); // 행사가 끝나면 자동으로 안 뜸
     const today = new Date().toDateString();
     const hidden = safe(() => localStorage.getItem('eof-notice') === today || sessionStorage.getItem('eof-notice'));
-    if (!hidden) setTimeout(() => !notice.open && notice.showModal(), 700);
+    if (!hidden && !expired) setTimeout(() => !notice.open && notice.showModal(), 700);
     notice.addEventListener('close', () => safe(() => sessionStorage.setItem('eof-notice', '1'))); // 닫으면 이번 접속 동안 숨김
     $('[data-close]', notice).onclick = () => notice.close();
     $('[data-skip]', notice).onclick = () => { safe(() => localStorage.setItem('eof-notice', today)); notice.close(); };
@@ -58,6 +59,9 @@
     if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
   }), { threshold: 0.12 });
   $$('.reveal').forEach((el) => io.observe(el));
+
+  // 링크 준비 중인 버튼은 눌러도 이동하지 않음
+  $$('a.btn[href="#"][target]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
 
   // 반복 구간이 튀지 않게: 시작은 페이드 인, 끝은 페이드 아웃 (배경은 검정)
   const fade = (v) => {

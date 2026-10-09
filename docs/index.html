@@ -8,6 +8,7 @@
 <meta property="og:title" content="Echoes of Farewell">
 <meta property="og:description" content="카드 수집과 메트로베니아 — TEAM A>S>D>F_">
 <meta property="og:image" content="assets/img/banner.webp">
+<meta property="og:type" content="website">
 <meta name="theme-color" content="#0a120f">
 <link rel="icon" href="assets/img/icon.png">
 <link rel="stylesheet" href="css/style.css">
@@ -158,17 +159,20 @@
 <section class="sec dl" id="download">
   <p class="eyebrow reveal">06 — <span class="ko">다운로드</span><span class="en">DOWNLOAD</span></p>
   <h2 class="reveal"><span class="ko">데모를 플레이해 보세요</span><span class="en">Play the demo</span></h2>
-  <p class="lead reveal"><span class="ko">Windows / macOS 데모 빌드를 구글 드라이브로 배포하고 있습니다.</span><span class="en">The Windows / macOS demo build is distributed through Google Drive.</span></p>
+  <p class="lead reveal"><span class="ko">사용하시는 운영체제에 맞는 데모 빌드를 받아 주세요. 구글 드라이브로 배포합니다.</span><span class="en">Pick the demo build for your OS. Files are hosted on Google Drive.</span></p>
   <p class="cta reveal">
-    <!-- TODO: 구글 드라이브 공유 링크로 교체 -->
-    <a class="btn primary big" id="drive" href="#" rel="noopener" target="_blank"><span class="ko">구글 드라이브에서 받기</span><span class="en">Get it on Google Drive</span></a>
+    <!-- TODO: 각 빌드의 구글 드라이브 공유 링크로 교체 (교체하면 '준비 중' 표시가 자동으로 사라집니다) -->
+    <a class="btn primary big" id="dl-win" href="#" rel="noopener" target="_blank"><span class="ko">Windows 다운로드</span><span class="en">Download for Windows</span></a>
+    <a class="btn primary big" id="dl-mac" href="#" rel="noopener" target="_blank"><span class="ko">macOS 다운로드</span><span class="en">Download for macOS</span></a>
   </p>
+  <p class="soon reveal"><span class="ko">다운로드 링크는 곧 열립니다.</span><span class="en">Download links are opening soon.</span></p>
 </section>
 
 <!-- EVENTS -->
 <section class="sec" id="events">
   <p class="eyebrow reveal">07 — <span class="ko">행사 · 수상</span><span class="en">EVENTS &amp; AWARDS</span></p>
   <ul class="timeline reveal">
+    <li><b>DCCF 2026</b><span><span class="ko">제5회 대구콘텐츠페어 · 10월 16~17일 · 엑스코 · <em>부스 E-142</em> (예정)</span><span class="en">5th Daegu Content Fair · Oct 16–17 · EXCO · <em>Booth E-142</em> (upcoming)</span></span></li>
     <li><b>UNICON</b><span><span class="ko">UNIDEV(전국대학생게임개발연합회) 주최 게임 전시회 · 인기상 수상</span><span class="en">UNIDEV game exhibition · Popular Choice Award</span></span></li>
     <li><b>MANACON</b><span><span class="ko">고려대학교 세종캠퍼스 주최 게임 전시회 · 전시</span><span class="en">Korea University Sejong campus game exhibition · Exhibited</span></span></li>
   </ul>
@@ -204,10 +208,10 @@
   <h2 class="reveal"><span class="ko">플레이 후기를 들려주세요</span><span class="en">Tell us what you think</span></h2>
   <p class="cta reveal">
     <!-- TODO: 구글 폼 링크로 교체 -->
-    <a class="btn primary" id="feedback" href="#" rel="noopener" target="_blank"><span class="ko">피드백 남기기</span><span class="en">Send feedback</span></a>
-    <!-- TODO: 이메일 주소로 교체 -->
-    <a class="btn" id="mail" href="mailto:"><span class="ko">이메일 문의</span><span class="en">Email us</span></a>
+    <a class="btn primary" id="feedback" href="#" rel="noopener" target="_blank"><span class="ko">후기 남기기</span><span class="en">Leave a review</span></a>
+    <a class="btn" id="mail" href="mailto:leejeongwoo1103@gmail.com"><span class="ko">이메일 문의</span><span class="en">Email us</span></a>
   </p>
+  <p class="mailto reveal">leejeongwoo1103@gmail.com</p>
 </section>
 </main>
 
@@ -216,11 +220,16 @@
   <p>© 2026 TEAM A&gt;S&gt;D&gt;F_ · Echoes of Farewell</p>
 </footer>
 
-<dialog id="notice" aria-labelledby="notice-t">
+<dialog id="notice" aria-labelledby="notice-t" data-until="2026-10-18T00:00+09:00">
   <p class="eyebrow"><span class="ko">NOTICE · 행사 안내</span><span class="en">NOTICE · EVENT</span></p>
-  <h2 id="notice-t"><span class="ko">대콘페에서 만나요</span><span class="en">See you at 대콘페</span></h2>
-  <!-- TODO: 일시·장소·부스 번호가 정해지면 아래 문구에 적어 주세요 -->
-  <p><span class="ko">Echoes of Farewell 부스에서 데모를 직접 플레이해 보세요. 일시와 부스 위치는 확정되는 대로 이곳에 안내드립니다.</span><span class="en">Come play the Echoes of Farewell demo at our booth. Date and booth location will be posted here once confirmed.</span></p>
+  <h2 id="notice-t"><span class="ko">대구콘텐츠페어에서 만나요</span><span class="en">Meet us at Daegu Content Fair</span></h2>
+  <dl class="facts">
+    <div><dt><span class="ko">행사</span><span class="en">Event</span></dt><dd><span class="ko">제5회 대구콘텐츠페어 (DCCF 2026)</span><span class="en">5th Daegu Content Fair (DCCF 2026)</span></dd></div>
+    <div><dt><span class="ko">일시</span><span class="en">Date</span></dt><dd><span class="ko">10월 16일(금) ~ 17일(토)</span><span class="en">Oct 16 (Fri) – 17 (Sat), 2026</span></dd></div>
+    <div><dt><span class="ko">장소</span><span class="en">Venue</span></dt><dd><span class="ko">엑스코(EXCO), 대구</span><span class="en">EXCO, Daegu</span></dd></div>
+    <div><dt><span class="ko">부스</span><span class="en">Booth</span></dt><dd><b class="booth">E-142</b></dd></div>
+  </dl>
+  <p><span class="ko">부스에서 Echoes of Farewell을 직접 플레이해 보세요!</span><span class="en">Come play Echoes of Farewell at our booth!</span></p>
   <div class="row">
     <button type="button" class="btn" data-skip><span class="ko">오늘은 그만 보기</span><span class="en">Don't show today</span></button>
     <button type="button" class="btn primary" data-close><span class="ko">닫기</span><span class="en">Close</span></button>

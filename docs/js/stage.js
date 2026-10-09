@@ -94,12 +94,14 @@
   const H = new Actor('hive', W * hiveX);
   const G = showGolem() ? new Actor('golem', W * golemX, { face: -1 }) : null;
 
+  const ambient = []; // 장면과 무관하게 떠다니는 캐릭터 (아래에서 채움)
+
   addEventListener('resize', () => {
     measure();
     P.x = Math.min(P.x, W * 0.95);
     H.x = W * hiveX;
     if (G) G.x = W * golemX;
-    [P, H, G].forEach((a) => a && a.layout());
+    [P, H, G, ...ambient].forEach((a) => a && a.layout());
     if (G) G.el.style.display = showGolem() ? '' : 'none';
   });
   if (lite) return; // 모션 줄이기: 정지 포즈만
@@ -116,6 +118,26 @@
     a.play('idle');
   };
   const edge = (dir) => (dir > 0 ? W + 80 * K : -80 * K); // dir 쪽 화면 밖
+
+  // 장면과 상관없이 계속 떠다니는 날벌레와 하이브 정령(하이브 주변에 2마리 대기)
+  const roam = async (a, xr, yr, speed) => { // xr·yr 은 호출 시점의 범위를 돌려주는 함수 (화면 크기가 바뀌어도 따라가도록)
+    for (;;) {
+      await gate();
+      const x = rnd(...xr()), y = rnd(...yr());
+      a.turn(x > a.x ? 1 : -1);
+      await a.move(x, speed, y);
+      await sleep(rnd(200, 900));
+    }
+  };
+  ambient.push(
+    new Actor('spirit', H.x + 60 * K, { y: 110 * K, start: 'fly' }),
+    new Actor('spirit', H.x - 40 * K, { y: 150 * K, start: 'fly' }),
+    new Actor('fairy', W * 0.62, { y: 150 * K, start: 'fly' }),
+  );
+  const near = () => [H.x - 120 * K, H.x + 170 * K];
+  roam(ambient[0], near, () => [90 * K, 170 * K], 60);
+  roam(ambient[1], near, () => [110 * K, 190 * K], 50);
+  roam(ambient[2], () => [W * 0.15, W * 0.9], () => [120 * K, 200 * K], 70);
 
   // ── 장면 ─────────────────────────────────────────────
   const scenes = {
@@ -240,7 +262,8 @@
       last = name;
       try { await scenes[name](); } catch {
         // 장면 도중 오류가 나도 다음 장면으로 (남은 임시 캐릭터는 정리)
-        [...stage.children].forEach((el) => { if (el.classList.contains('actor') && ![P.el, H.el, G && G.el].includes(el)) el.remove(); });
+        const keep = [P, H, G, ...ambient].map((a) => a && a.el);
+        [...stage.children].forEach((el) => { if (el.classList.contains('actor') && !keep.includes(el)) el.remove(); });
       }
       await sleep(rnd(900, 2200));
     }

@@ -37,7 +37,7 @@ ACTORS = {
     'fly':    (rng(f'{SP}/Eenmies_Sprites/Seed_Spirit/Seed_Spirit_fly_{{}}.png', 1, 3), 10),
     'attack': (rng(f'{SP}/Eenmies_Sprites/Seed_Spirit/Seed_Spirit_atack_{{}}.png', 1, 3), 10),
   }),
-  'golem': dict(scale=0.27, nearest=False, foot='idle', anims={
+  'golem': dict(scale=0.27, nearest=False, foot='idle', align='feet', anims={
     'idle':   ([f'{SP}/Eenmies_Sprites/Golem/golem{i}.png' for i in (1, 5, 6, 5)], 4),
     'attack': ([f'{SP}/Eenmies_Sprites/Golem/golem{i}.png' for i in (9, 10, 11, 11, 12, 12, 13)], 8),
   }),
@@ -59,8 +59,32 @@ def bbox(f):  # (x0, y0, x1, y1) 불투명 영역
     w, h = map(int, size.split('x')); x, y = map(int, rest.split('+'))
     return x, y, x + w, y + h
 
+def feet(f):  # 발 쪽(아래 22%) 중심 x 와 맨 아래 y
+    x0, y0, x1, y1 = bbox(f)
+    top = y1 - max(1, round((y1 - y0) * 0.22))
+    g = sh('magick', f, '-crop', f'{x1 - x0}x{y1 - top}+{x0}+{top}', '+repage', '-format', '%@', 'info:')
+    size, rest = g.split('+', 1)
+    w, _ = map(int, size.split('x')); gx, _ = map(int, rest.split('+'))
+    return x0 + gx + w / 2, y1
+
+def align_feet(c, name):
+    # 프레임마다 발 위치가 몇 px 달라 보이면 재생할 때 몸이 1px 씩 튄다 → 첫 프레임 기준으로 발을 맞춘다
+    ref = None
+    for an, (fr, fps) in c['anims'].items():
+        new = []
+        for i, f in enumerate(fr):
+            cx, by = feet(f)
+            ref = ref or (cx, by)
+            dx, dy = round(ref[0] - cx), round(ref[1] - by)
+            t = f'{TMP}/al_{name}_{an}_{i}.png'
+            sh('magick', f, '-background', 'none', '-roll', f'{dx:+d}{dy:+d}', t)
+            new.append(t)
+        c['anims'][an] = (new, fps)
+
 out = {}
 for name, c in ACTORS.items():
+    if c.get('align') == 'feet':
+        align_feet(c, name)
     frames = [f for fr, _ in c['anims'].values() for f in fr]
     if c.get('center'):
         cw, ch = c['center']; box = f'{cw}x{ch}+0+0'; bw, bh = cw, ch; by1 = None

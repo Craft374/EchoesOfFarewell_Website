@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ko" data-lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Echoes of Farewell</title>
+<meta name="description" content="카드 수집과 메트로베니아. 패링으로 영혼불을 모으는 2D 횡스크롤 액션 어드벤처, Echoes of Farewell.">
+<meta property="og:title" content="Echoes of Farewell">
+<meta property="og:description" content="카드 수집과 메트로베니아 — TEAM A>S>D>F_">
+<meta property="og:image" content="assets/img/banner.webp">
+<meta name="theme-color" content="#0a120f">
+<link rel="icon" href="assets/img/icon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!--
+  콘텐츠 수정 가이드
+  - 한/영 문구는 <span class="ko">…</span><span class="en">…</span> 쌍으로 적습니다.
+  - TODO 표시가 있는 링크(#)는 실제 주소로 바꿔 주세요: 다운로드(구글 드라이브), 피드백 폼, 이메일.
+  - 행사 안내 배너: #event 의 hidden 속성을 지우고 문구를 적으면 표시됩니다.
+-->
+
+<div id="event" class="event" hidden>
+  <span class="ko">행사 안내 문구를 여기에 적어 주세요.</span><span class="en">Event notice goes here.</span>
+</div>
+
+<header class="nav" id="top">
+  <a class="brand" href="#top" aria-label="Echoes of Farewell"><img src="assets/img/icon.png" alt="" width="28" height="28"><b>EOF</b></a>
+  <nav aria-label="sections">
+    <a href="#about"><span class="ko">소개</span><span class="en">About</span></a>
+    <a href="#features"><span class="ko">특징</span><span class="en">Features</span></a>
+    <a href="#gallery"><span class="ko">갤러리</span><span class="en">Gallery</span></a>
+    <a href="#controls"><span class="ko">조작법</span><span class="en">Controls</span></a>
+    <a href="#download"><span class="ko">다운로드</span><span class="en">Download</span></a>
+    <a href="#team"><span class="ko">팀</span><span class="en">Team</span></a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <button class="lang" id="lang" type="button" aria-label="Language / 언어">EN</button>
+</header>
+
+<main>
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg" data-parallax="0.15"></div>
+  <div class="hero-vig"></div>
+  <div class="spirits" aria-hidden="true"></div>
+  <div class="hero-body" data-parallax="-0.08">
+    <h1><img class="logo" src="assets/img/logo.png" alt="Echoes of Farewell" width="861" height="394"></h1>
+    <p class="tag"><span class="ko">카드 수집과 메트로베니아</span><span class="en">Card collecting meets Metroidvania</span></p>
+    <p class="cta">
+      <a class="btn primary" href="#download"><span class="ko">데모 다운로드</span><span class="en">Download Demo</span></a>
+      <a class="btn" href="#about"><span class="ko">게임 소개</span><span class="en">About the game</span></a>
+    </p>
+  </div>
+  <div class="ground" aria-hidden="true">
+    <i class="walker bug"></i>
+    <i class="walker fly"></i>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="sec" id="about">
+  <p class="eyebrow reveal">01 — <span class="ko">게임 소개</span><span class="en">ABOUT</span></p>
+  <div class="about reveal">
+    <img class="wide" src="assets/img/banner.webp" alt="Echoes of Farewell key art" width="1600" height="667" loading="lazy">
+    <div>
+      <h2><span class="ko">신비로운 숲, 긴장감 넘치는 전투.</span><span class="en">A mysterious world. Tense fights.</span></h2>
+      <p class="lead">
+        <span class="ko">Echoes of Farewell은 카드 수집과 메트로베니아를 결합한 2D 횡스크롤 액션 어드벤처입니다. 맵을 탐험하고, 적의 공격을 받아쳐 영혼불을 모으며, 카드로 나만의 전투 방식을 만들어 보세요.</span>
+        <span class="en">Echoes of Farewell is a 2D side-scrolling action adventure that blends card collecting with Metroidvania exploration. Explore the map, parry attacks to gather soul fire, and shape your own fighting style with cards.</span>
+      </p>
+      <dl class="facts">
+        <div><dt><span class="ko">장르</span><span class="en">Genre</span></dt><dd><span class="ko">액션 · 어드벤처 · 퍼즐 · 스토리 · 메트로베니아</span><span class="en">Action · Adventure · Puzzle · Story · Metroidvania</span></dd></div>
+        <div><dt><span class="ko">플랫폼</span><span class="en">Platform</span></dt><dd>Windows · macOS</dd></div>
+        <div><dt><span class="ko">언어</span><span class="en">Language</span></dt><dd><span class="ko">한국어</span><span class="en">Korean</span></dd></div>
+        <div><dt><span class="ko">상태</span><span class="en">Status</span></dt><dd><span class="ko">데모 배포 중</span><span class="en">Demo available</span></dd></div>
+        <div><dt><span class="ko">가격</span><span class="en">Price</span></dt><dd><span class="ko">미정</span><span class="en">TBD</span></dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="sec" id="features">
+  <p class="eyebrow reveal">02 — <span class="ko">게임 특징</span><span class="en">FEATURES</span></p>
+  <h2 class="reveal"><span class="ko">세 가지 핵심 재미</span><span class="en">Three things that define the game</span></h2>
+
+  <article class="feat reveal">
+    <video muted loop playsinline preload="none" poster="assets/img/poster-battle.jpg" data-src="assets/video/battle.mp4"></video>
+    <div>
+      <span class="num">01</span>
+      <h3><span class="ko">성취감 있는 고난이도</span><span class="en">Hard, and worth it</span></h3>
+      <p><span class="ko">쉽지 않은 전투를 하나씩 돌파해 나갈 때 오는 성취감. 적의 패턴을 읽고, 쓰러뜨리고, 다음 구역으로 나아가세요.</span><span class="en">Read each enemy's patterns, beat them one by one, and push into the next area. Every win is earned.</span></p>
+    </div>
+  </article>
+
+  <article class="feat flip reveal">
+    <img src="assets/img/shots/s1.webp" alt="" loading="lazy" width="1280" height="1217" class="shot">
+    <div>
+      <span class="num">02</span>
+      <h3><span class="ko">카드로 만드는 다양한 전투</span><span class="en">Card-driven combat variety</span></h3>
+      <p><span class="ko">카드 시스템으로 전투 방식이 달라집니다. 어떤 카드를 모으고 어떻게 조합하느냐에 따라 같은 적도 전혀 다른 싸움이 됩니다.</span><span class="en">Cards change how you fight. What you collect and how you combine it can turn the same enemy into an entirely different fight.</span></p>
+    </div>
+  </article>
+
+  <article class="feat reveal">
+    <video muted loop playsinline preload="none" poster="assets/img/poster-parry.jpg" data-src="assets/video/parry.mp4"></video>
+    <div>
+      <span class="num">03</span>
+      <h3><span class="ko">타격감 있는 패링</span><span class="en">Satisfying parries</span></h3>
+      <p><span class="ko">적절한 타이밍에 F키로 패링하면 공격을 받아치고 영혼불을 얻습니다. 영혼불이 3개면 강공격, 6개(최대)면 영혼모드로 각성합니다.</span><span class="en">Press F with good timing to parry and gain soul fire. At 3 you can unleash a heavy attack; at 6 (max) you awaken into Soul Mode.</span></p>
+    </div>
+  </article>
+</section>
+
+<!-- GALLERY -->
+<section class="sec" id="gallery">
+  <p class="eyebrow reveal">03 — <span class="ko">갤러리</span><span class="en">GALLERY</span></p>
+  <h2 class="reveal"><span class="ko">플레이 장면</span><span class="en">In-game moments</span></h2>
+  <div class="masonry reveal" id="shots"></div>
+</section>
+
+<!-- CONTROLS -->
+<section class="sec" id="controls">
+  <p class="eyebrow reveal">04 — <span class="ko">조작법 · 사양</span><span class="en">CONTROLS &amp; SPECS</span></p>
+  <div class="two reveal">
+    <div>
+      <h2><span class="ko">조작법</span><span class="en">Controls</span></h2>
+      <ul class="keys">
+        <li><span class="kc"><kbd>A</kbd><kbd>D</kbd></span><span class="ko">이동</span><span class="en">Move</span></li>
+        <li><span class="kc"><kbd>Shift</kbd></span><span class="ko">질주 (왼쪽 Shift)</span><span class="en">Sprint (Left Shift)</span></li>
+        <li><span class="kc"><kbd>Space</kbd></span><span class="ko">점프</span><span class="en">Jump</span></li>
+        <li><span class="kc"><kbd>Mouse L</kbd></span><span class="ko">공격</span><span class="en">Attack</span></li>
+        <li><span class="kc"><kbd>F</kbd></span><span class="ko">패링 · 꾹 누르면 방어</span><span class="en">Parry · hold to guard</span></li>
+        <li><span class="kc"><kbd>E</kbd></span><span class="ko">상호작용</span><span class="en">Interact</span></li>
+      </ul>
+    </div>
+    <div>
+      <h2><span class="ko">시스템 요구사항</span><span class="en">System requirements</span></h2>
+      <dl class="facts">
+        <div><dt>OS</dt><dd>Windows · macOS</dd></div>
+        <div><dt><span class="ko">상세 사양</span><span class="en">Details</span></dt><dd><span class="ko">추후 공개</span><span class="en">Coming soon</span></dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section class="sec dl" id="download">
+  <p class="eyebrow reveal">05 — <span class="ko">다운로드</span><span class="en">DOWNLOAD</span></p>
+  <h2 class="reveal"><span class="ko">데모를 플레이해 보세요</span><span class="en">Play the demo</span></h2>
+  <p class="lead reveal"><span class="ko">Windows / macOS 데모 빌드를 구글 드라이브로 배포하고 있습니다.</span><span class="en">The Windows / macOS demo build is distributed through Google Drive.</span></p>
+  <p class="cta reveal">
+    <!-- TODO: 구글 드라이브 공유 링크로 교체 -->
+    <a class="btn primary big" id="drive" href="#" rel="noopener" target="_blank"><span class="ko">구글 드라이브에서 받기</span><span class="en">Get it on Google Drive</span></a>
+  </p>
+</section>
+
+<!-- TEAM -->
+<section class="sec" id="team">
+  <p class="eyebrow reveal">06 — <span class="ko">개발팀</span><span class="en">TEAM</span></p>
+  <h2 class="sr">Team A&gt;S&gt;D&gt;F_</h2>
+  <div class="team reveal">
+    <img src="assets/img/team.png" alt="TEAM A&gt;S&gt;D&gt;F_" width="1000" height="163" loading="lazy">
+    <p><span class="ko">팀원 소개는 곧 추가됩니다.</span><span class="en">Team member profiles are coming soon.</span></p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="sec" id="faq">
+  <p class="eyebrow reveal">07 — FAQ</p>
+  <h2 class="sr">FAQ</h2>
+  <div class="faq reveal">
+    <details><summary><span class="ko">무료인가요?</span><span class="en">Is it free?</span></summary><p><span class="ko">현재 데모는 무료로 받을 수 있습니다. 정식 가격은 아직 정해지지 않았습니다.</span><span class="en">The demo is free to download. The final price has not been decided yet.</span></p></details>
+    <details><summary><span class="ko">어떤 플랫폼에서 즐길 수 있나요?</span><span class="en">Which platforms are supported?</span></summary><p><span class="ko">Windows와 macOS를 지원합니다.</span><span class="en">Windows and macOS.</span></p></details>
+    <details><summary><span class="ko">영어를 지원하나요?</span><span class="en">Does the game support English?</span></summary><p><span class="ko">현재 게임은 한국어만 지원합니다. 이 웹사이트는 한국어와 영어로 볼 수 있습니다.</span><span class="en">The game is currently Korean only. This website is available in Korean and English.</span></p></details>
+    <details><summary><span class="ko">정식 출시는 언제인가요?</span><span class="en">When is the full release?</span></summary><p><span class="ko">아직 정해지지 않았습니다. 소식은 이 페이지에 먼저 공개됩니다.</span><span class="en">Not decided yet. News will appear on this page first.</span></p></details>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="sec" id="contact">
+  <p class="eyebrow reveal">08 — <span class="ko">문의 · 피드백</span><span class="en">CONTACT &amp; FEEDBACK</span></p>
+  <h2 class="reveal"><span class="ko">플레이 후기를 들려주세요</span><span class="en">Tell us what you think</span></h2>
+  <p class="cta reveal">
+    <!-- TODO: 구글 폼 링크로 교체 -->
+    <a class="btn primary" id="feedback" href="#" rel="noopener" target="_blank"><span class="ko">피드백 남기기</span><span class="en">Send feedback</span></a>
+    <!-- TODO: 이메일 주소로 교체 -->
+    <a class="btn" id="mail" href="mailto:"><span class="ko">이메일 문의</span><span class="en">Email us</span></a>
+  </p>
+</section>
+</main>
+
+<footer class="foot">
+  <img src="assets/img/icon.png" alt="" width="32" height="32">
+  <p>© 2026 TEAM A&gt;S&gt;D&gt;F_ · Echoes of Farewell</p>
+</footer>
+
+<dialog id="lb" aria-label="screenshot"><img alt=""><button type="button" aria-label="close">×</button></dialog>
+
+<script src="js/main.js"></script>
+</body>
+</html>

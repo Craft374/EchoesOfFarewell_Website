@@ -7,23 +7,14 @@
 - [ ] `docs/index.html` 의 `#dl-win`, `#dl-mac` 버튼 `href="#"` 를 각 공유 링크로 교체
   (교체하면 "준비 중" 표시가 자동으로 사라집니다)
 
-## 2. 플레이 후기 구글 폼
-- [ ] Google Forms에서 새 폼을 만들고 링크를 `docs/index.html` 의 `#feedback` 버튼 `href` 에 넣기
-- 추천 문항: 플레이한 OS / 플레이 시간 / 별점(전체·전투·패링·카드·난이도) / 가장 좋았던 점 / 아쉬운 점 /
-  막힌 구간·버그 / 친구에게 추천할 의향 / 이메일(선택) / 자유 의견
-- 응답을 스프레드시트로 받으려면 폼의 "응답" 탭에서 시트 연결
+## 2. (보류) 플레이 후기 구글 폼 · 팀원 소개
+- 지금은 사이트에서 뺐습니다. 준비되면 말씀해 주세요. 문의는 이메일(leejeongwoo1103@gmail.com)로 받습니다.
 
-## 3. 팀원 소개
-- [ ] 이름(닉네임)·역할 정리해서 전달 (사이트의 `#team` 섹션)
+## 3. 도메인 — 완료
+- `echoes-of-farewell.kro.kr` 가 대표 주소이고, `echoesoffarewell.kro.kr`, `eof.r-e.kr` 은 대표 주소로 이동합니다.
+- 서버(nginx, `/etc/nginx/sites-enabled/echoes-of-farewell.kro.kr.conf`)와 인증서(acme.sh, 자동 갱신)는 설정됨.
 
-## 4. 도메인 연결 (이 순서로)
-1. 각 도메인 관리 페이지에서 **A 레코드**를 서버 IP로 지정
-   - 값: `34.169.215.118`
-   - 대상: `echoes-of-farewell.kro.kr`, `echoesoffarewell.kro.kr`, `eof.r-e.kr`
-2. 반영되면 알려 주세요. 그러면 제가 서버(nginx + acme.sh 인증서, 기존 `accord.kro.kr` 와 같은 방식)와
-   저장소의 `docs/CNAME` 을 설정합니다.
-
-## 5. 행사 후 정리 (10월 18일 이후)
+## 4. 행사 후 정리 (10월 18일 이후)
 - 행사 팝업은 `data-until` 날짜가 지나면 자동으로 뜨지 않습니다.
 - `docs/index.html` 의 `#notice` 팝업과 `#events` 의 DCCF 항목은 행사가 끝나면 지우거나 "참가 완료"로 바꿔 주세요.
 

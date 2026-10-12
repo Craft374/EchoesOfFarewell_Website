@@ -18,19 +18,29 @@
   };
   measure();
 
+  const HP = { bug: 3, fairy: 2, spirit: 2, bigbug: 8, golem: 6, hive: 5 }; // 몇 번 클릭하면 쓰러지는지 (주인공은 클릭 안 됨)
+
   class Actor {
-    constructor(name, x, { y = 0, face = 1, start } = {}) {
+    // keep: 쓰러져도 10초 뒤 다시 나타나는 고정·배경 몹
+    constructor(name, x, { y = 0, face = 1, start, keep = false } = {}) {
       this.d = S[name];
+      this.name = name; this.keep = keep;
       this.x = x; this.y = y; this.face = face;
       this.el = document.createElement('i');
       this.el.className = 'actor' + (['golem', 'hive', 'bug'].includes(name) ? ' smooth' : '');
       stage.append(this.el);
       if (!lite) for (const a of Object.values(this.d)) if (a.src) new Image().src = a.src; // 다음 동작 이미지를 미리 받아 둔다 (lite 는 첫 장면만 보여 줌)
       this.cur = [start || (this.d.idle ? 'idle' : 'fly'), false];
+      if (HP[name]) {
+        this.hp = HP[name];
+        this.el.classList.add('mob');
+        this.el.addEventListener('pointerdown', (e) => { e.preventDefault(); this.damage(e); }); // preventDefault: 연타해도 글자가 선택되지 않게
+      }
       this.layout();
     }
     // 크기·기준점 계산 (화면 배율이 바뀌면 다시 호출)
     layout() {
+      if (this.dead) return; // 다시 나타날 때 호출됨
       const e = this.el.style;
       e.bottom = 6 - this.d.foot * K + 'px';
       e.transformOrigin = this.d.ax * K + 'px 100%';
@@ -44,6 +54,7 @@
     // 동작 재생. a.f(프레임 번호)를 a.d(초)만큼씩 보여 준다 — Unity 애니메이션과 같은 타이밍.
     // once=true 면 마지막 프레임에서 멈춘다. 끝나는 시점에 풀리는 Promise 반환
     play(anim, once = false) {
+      this.live();
       const a = this.d[anim], e = this.el, w = a.w * K, n = Math.max(...a.f) + 1;
       const T = a.d.reduce((s, d) => s + d, 0);
       this.cur = [anim, once];
@@ -62,6 +73,7 @@
       return sleep(T * 1000);
     }
     turn(f) {
+      this.live();
       if (f === this.face) return;
       this.el.style.transition = 'opacity .5s'; // 방향 전환은 즉시
       this.face = f;
@@ -69,6 +81,7 @@
       void this.el.offsetWidth;
     }
     async move(x, speed, y = this.y) {
+      this.live();
       const d = Math.max(Math.hypot(x - this.x, y - this.y) / (speed * K), 0.01);
       this.el.style.transition = `transform ${d}s linear, opacity .5s`;
       this.x = x; this.y = y;
@@ -76,8 +89,22 @@
       await sleep(d * 1000);
     }
     hit() { // 피격 반짝임
+      this.live();
       this.el.classList.add('hit');
       setTimeout(() => this.el.classList.remove('hit'), 160);
+    }
+    live() { if (this.dead) throw new Error('dead'); } // 쓰러진 몹을 장면이 계속 쓰려 하면 그 장면을 끝낸다 (장면 실행부의 catch 가 정리)
+    // 클릭 피격: 체력이 다하면 사라지고, keep 이면 10초 뒤 다시 나타난다
+    damage(e) {
+      if (this.dead) return;
+      const r = stage.getBoundingClientRect();
+      spark(e.clientX - r.left, r.bottom - e.clientY - 6);
+      this.hit();
+      if (--this.hp > 0) return;
+      this.dead = true;
+      this.el.style.opacity = 0;
+      if (!this.keep) return void setTimeout(() => this.el.remove(), 550);
+      setTimeout(() => { this.dead = false; this.hp = HP[this.name]; this.layout(); this.el.style.opacity = ''; }, 10000);
     }
     async vanish() {
       this.el.style.opacity = 0;
@@ -98,8 +125,8 @@
   const hiveX = 0.1, golemX = 0.86; // 고정 몬스터 위치(폭 비율)
   const showGolem = () => W >= 560;
   const P = new Actor('player', W * 0.5);
-  const H = new Actor('hive', W * hiveX);
-  const G = showGolem() ? new Actor('golem', W * golemX, { face: -1 }) : null;
+  const H = new Actor('hive', W * hiveX, { keep: true });
+  const G = showGolem() ? new Actor('golem', W * golemX, { face: -1, keep: true }) : null;
 
   const ambient = []; // 장면과 무관하게 떠다니는 캐릭터 (아래에서 채움)
 
@@ -130,6 +157,7 @@
   const roam = async (a, xr, yr, speed) => { // xr·yr 은 호출 시점의 범위를 돌려주는 함수 (화면 크기가 바뀌어도 따라가도록)
     for (;;) {
       await gate();
+      if (a.dead) { await sleep(1000); continue; }
       const x = rnd(...xr()), y = rnd(...yr());
       a.turn(x > a.x ? 1 : -1);
       await a.move(x, speed, y);
@@ -137,9 +165,9 @@
     }
   };
   ambient.push(
-    new Actor('spirit', H.x + 60 * K, { y: 110 * K, start: 'fly' }),
-    new Actor('spirit', H.x - 40 * K, { y: 150 * K, start: 'fly' }),
-    new Actor('fairy', W * 0.62, { y: 150 * K, start: 'fly' }),
+    new Actor('spirit', H.x + 60 * K, { y: 110 * K, start: 'fly', keep: true }),
+    new Actor('spirit', H.x - 40 * K, { y: 150 * K, start: 'fly', keep: true }),
+    new Actor('fairy', W * 0.62, { y: 150 * K, start: 'fly', keep: true }),
   );
   const near = () => [H.x - 120 * K, H.x + 170 * K];
   roam(ambient[0], near, () => [90 * K, 170 * K], 60);
@@ -291,7 +319,7 @@
     const names = Object.keys(scenes).filter((n) => n !== 'golem' || G);
     for (;;) {
       await gate();
-      const name = pick(names.filter((n) => n !== last));
+      const name = pick(names.filter((n) => n !== last && !{ golem: G, hive: H }[n]?.dead)); // 쓰러진 고정 몹의 장면은 건너뜀
       last = name;
       try { await scenes[name](); } catch {
         // 장면 도중 오류가 나도 다음 장면으로 (남은 임시 캐릭터는 정리)

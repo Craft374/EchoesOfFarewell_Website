@@ -34,7 +34,8 @@ a{color:inherit}
 .hero{position:relative;min-height:calc(100svh - 53px);display:grid;place-items:center;overflow:hidden;isolation:isolate;text-align:center}
 .hero-bg{position:absolute;inset:-6%;background:url("../assets/img/hero-bg.webp") center/cover;filter:brightness(.38) saturate(.8);z-index:-3;will-change:transform}
 .hero-vig{position:absolute;inset:0;z-index:-2;background:radial-gradient(ellipse at 50% 42%,transparent 25%,var(--bg) 100%),linear-gradient(transparent 70%,var(--bg))}
-.hero-body{padding:0 16px 150px;will-change:transform}
+.hero-body{padding:0 16px 150px;will-change:transform;pointer-events:none}
+.hero-body>*{pointer-events:auto} /* 아래 여백은 클릭이 몬스터에게 가도록 */
 .logo{width:min(640px,86vw);height:auto;margin:0 auto;filter:brightness(1.55) contrast(1.05) drop-shadow(0 4px 24px rgba(0,0,0,.6))}
 .tag{margin-top:18px;font:clamp(18px,3vw,26px) var(--pix);letter-spacing:.14em;color:var(--spirit);text-shadow:0 0 18px rgba(67,240,166,.45)}
 .cta{margin-top:34px;display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
@@ -51,6 +52,7 @@ a{color:inherit}
 .actor{position:absolute;left:0;background:no-repeat 0 0;image-rendering:pixelated;will-change:transform;transition:opacity .5s}
 .actor.smooth{image-rendering:auto}
 .actor.hit{filter:brightness(2.2) saturate(.6)}
+.actor.mob{pointer-events:auto;cursor:pointer}
 .spark{position:absolute;width:44px;height:44px;margin:0 0 -22px -22px;animation:spark .45s ease-out forwards}
 .spark::before,.spark::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,#fff 0 14%,var(--spirit) 30%,transparent 62%)}
 .spark::after{transform:rotate(45deg) scale(.6,1.5);background:linear-gradient(90deg,transparent 40%,#fff 50%,transparent 60%)}

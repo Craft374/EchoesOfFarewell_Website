@@ -45,8 +45,9 @@ def sprite(path, fid=None):
     pivot = (float(pv[1]), float(pv[2])) if al == 9 else ALIGN[al]
     return path, rect, pivot, ppu
 
-def clip(rel):
-    """Unity 애니메이션 → [(스프라이트, 초)]. 같은 스프라이트가 이어지면 합치고, 끝을 표시하는 1틱짜리 키는 앞 프레임에 붙인다."""
+def clip(rel, slow=1):
+    """Unity 애니메이션 → [(스프라이트, 초)]. 같은 스프라이트가 이어지면 합치고, 끝을 표시하는 1틱짜리 키는 앞 프레임에 붙인다.
+    slow: 재생 시간 배율 (2 면 두 배 느리게)"""
     t = open(f'{UA}/{rel}.anim').read()
     stop = float(re.search(r'm_StopTime: ([\d.]+)', t)[1])
     sr = float(re.search(r'm_SampleRate: ([\d.]+)', t)[1])
@@ -57,7 +58,7 @@ def clip(rel):
         if out and out[-1][0] == (GUID[g], fid): out[-1][1] += d
         else: out.append([(GUID[g], fid), d])
     if len(out) > 1 and out[-1][1] <= 1.5 / sr: out[-2][1] += out.pop()[1]
-    return [(sprite(*k), d) for k, d in out]
+    return [(sprite(*k), d * slow) for k, d in out]
 
 def files(paths, fps): return [(sprite(p), 1 / fps) for p in paths]
 def rng(fmt, a, b): return [fmt.format(i) for i in range(a, b + 1)]
@@ -85,7 +86,7 @@ ACTORS = {
     'attack': clip('Sprites/Eenmies_Sprites/Big_seed_bug/A1'),  # 꼬리 휘두르기
   }),
   'fairy': dict(scale=20.8, nearest=True, foot=None, anims={
-    'fly':    clip('Animations/Enemies/Seed_Spirit_fly'),
+    'fly':    clip('Animations/Enemies/Seed_Spirit_fly', slow=3),  # 게임 클립은 0.1초 주기(초당 30장)라 사이트 크기에선 너무 빨라 보여 3배 느리게
     'ready':  clip('Animations/Enemies/Seed_Spirit_A1_before'),
     'attack': clip('Animations/Enemies/Seed_Spirit_A1'),
   }),
@@ -98,7 +99,7 @@ ACTORS = {
     'pulse': files([f'{EN}/hive/off.png', f'{EN}/hive/on.png'], 2),
   }),
   'spirit': dict(scale=16, nearest=True, foot=None, anims={
-    'fly':    clip('Animations/Enemies/HiveSpirit_fly'),
+    'fly':    clip('Animations/Enemies/HiveSpirit_fly', slow=3),  # 씨앗 정령과 같은 이유
     'attack': clip('Animations/Enemies/HiveSpirit_A1'),
   }),
 }

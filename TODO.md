@@ -1,11 +1,7 @@
 # 직접 하셔야 할 일
 
-## 1. 게임 빌드 올리기
-- [ ] Unity에서 **Windows 빌드**, **macOS 빌드**를 각각 만들어 zip으로 압축
-  (게임 저장소의 `Build/` 안에 예전 zip이 있지만 `no_hits`, `unicon` 같은 행사용 버전이니 최신인지 확인해 주세요)
-- [ ] 구글 드라이브에 업로드 → 공유를 **"링크가 있는 모든 사용자 / 뷰어"** 로 설정
-- [ ] `docs/index.html` 의 `#dl-win`, `#dl-mac` 버튼 `href="#"` 를 각 공유 링크로 교체
-  (교체하면 "준비 중" 표시가 자동으로 사라집니다)
+## 1. 게임 빌드 — 완료
+- `#download` 의 Windows / macOS 버튼에 구글 드라이브 링크(DCCF 빌드) 연결됨. 새 빌드를 올리면 `docs/index.html` 의 `#dl-win`, `#dl-mac` href 만 바꿔 주세요.
 
 ## 2. 플레이 후기 구글 폼 — 완료 / 팀원 소개 — 보류
 - 후기 폼(https://forms.gle/ixTq9JHmvwYqbg5D6)은 `#contact` 의 `#feedback` 버튼에 연결됨. 폼 생성 스크립트는 `GOOGLE_FORM.md`.

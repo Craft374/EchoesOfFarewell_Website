@@ -294,12 +294,13 @@
     }, 33);
     return () => { clearInterval(t); setTimeout(() => box.remove(), 300); };
   };
-  // Slash_Aoe_Attack (크기 3.5배): 0.04초마다 20번, 사방으로 도는 베기와 번쩍이는 선. 판정은 반지름 7유닛 안에 5 피해 × 10번(0.08초 간격)
+  // Slash_Aoe_Attack (크기 3.5배): 0.04초마다 20번, 사방으로 도는 고리 모양 베기(반지름 7유닛)와 번쩍이는 선.
+  // 판정은 반지름 7유닛 안에 5 피해 × 10번(0.08초 간격)
   const aoe = () => {
     const [x, y] = mid(me), box = fxAt(x, y), u = unit();
     for (let i = 0; i < 20; i++) {
       setTimeout(() => {
-        const s = document.createElement('i'), z = 7 * u, a = rnd(0, 360);
+        const s = document.createElement('i'), z = 14 * u, a = rnd(0, 360); // z: 고리 지름
         s.className = 'sl';
         s.style.cssText = `width:${z}px;height:${z}px;left:${rnd(-0.9, 0.9) * u - z / 2}px;top:${rnd(-0.9, 0.9) * u - z / 2}px;background-size:${9 * z}px ${z}px`;
         box.append(s);

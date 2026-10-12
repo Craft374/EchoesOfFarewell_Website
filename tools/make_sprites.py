@@ -183,10 +183,13 @@ def sheet(src, grid, size, dst, *color):
 sheet(f'{UA}/PlusAssets/Hun0FX/Textures/Tx_Fire_ground_04.png', '5x4', '80x80', f'{OUT}/assets/img/fx-soulfire.webp',
       '-channel', 'B', '-fx', '0.6 + 0.12 * r * r * (3 - 2 * r)', '-channel', 'R', '-fx', '0.15 * r * r * (3 - 2 * r)',
       '-channel', 'G', '-evaluate', 'set', '100%', '-channel', 'A', '-evaluate', 'multiply', '0.59', '+channel')
-# 강화공격 베기 (Slash_Aoe_Attack, 가산 혼합): 밝기 = 알파, 색은 파티클 그라디언트의 초록 (0.35, 1, 0)
-sheet(f'{UA}/NamuFX2/Simple Stylized Slash vol2/Textures/T_SlashSheet01.png', '3x3', '192x192', f'{OUT}/assets/img/fx-slash.webp',
-      '-alpha', 'off', '-colorspace', 'gray', '-alpha', 'copy', '-colorspace', 'sRGB', '-channel', 'R', '-evaluate', 'set', '35%',
-      '-channel', 'G', '-evaluate', 'set', '100%', '-channel', 'B', '-evaluate', 'set', '0', '+channel')
+# 강화공격 베기 (Slash_Aoe_Attack, 가산 혼합): 밝기 = 알파, 색은 파티클 그라디언트의 초록 (0.35, 1, 0).
+# 게임은 이 텍스처를 SlashMesh_00(바깥 반지름 1 · 안쪽 0.475 · 225° 고리, 위쪽 = 바깥)에 입히므로 같은 고리 모양으로 휜다
+R = 144
+sh('magick', f'{UA}/NamuFX2/Simple Stylized Slash vol2/Textures/T_SlashSheet01.png', '-crop', '3x3@', '+repage',
+   '-alpha', 'off', '-colorspace', 'gray', '-background', 'rgb(89,255,0)', '-alpha', 'shape', '-virtual-pixel', 'transparent',
+   '-define', f'distort:viewport={2 * R}x{2 * R}-{R}-{R}', '-distort', 'Arc', f'225 0 {R} {round(R * 0.475)}', '+repage',
+   '+append', '-quality', '82', f'{OUT}/assets/img/fx-slash.webp')
 
 for f in glob.glob(f'{IMG}/*.webp'):  # 더 이상 쓰지 않는 동작의 이미지 정리
     if os.path.basename(f)[:-5].split('-', 1)[1] not in out.get(os.path.basename(f).split('-')[0], {}): os.remove(f)

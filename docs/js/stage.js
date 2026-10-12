@@ -1,5 +1,6 @@
 // 히어로 하단 연출: 주인공과 몬스터들이 돌아다니고 서로 싸웁니다.
-// 몹·주인공 클릭 = 피격, 빈 곳 꾹 누르기 = 주인공 강공격, 몹을 쓰러뜨리면 영혼불 +1 / 주인공이 맞으면 -1
+// 몹·주인공 클릭 = 피격, 몹을 쓰러뜨리면 영혼불 +1 / 주인공이 맞으면 -1,
+// 영혼불 3개 이상일 때 빈 곳을 꾹 눌렀다 떼면 강화공격 (게임과 같은 규칙)
 // 스프라이트 정보는 sprites.js (tools/make_sprites.py 로 생성)
 (() => {
   const S = window.SPRITES;
@@ -28,7 +29,7 @@
       this.name = name; this.keep = keep;
       this.x = x; this.y = y; this.face = face;
       this.el = document.createElement('i');
-      this.el.actor = this; // 강공격 범위 판정용
+      this.el.actor = this; // 강화공격 범위 판정용
       this.el.className = 'actor' + (['golem', 'hive', 'bug'].includes(name) ? ' smooth' : '');
       stage.append(this.el);
       if (!lite) for (const a of Object.values(this.d)) if (a.src) new Image().src = a.src; // 다음 동작 이미지를 미리 받아 둔다 (lite 는 첫 장면만 보여 줌)
@@ -36,9 +37,16 @@
       if (HP[name]) {
         this.hp = HP[name];
         this.el.classList.add('mob');
-        this.el.addEventListener('pointerdown', (e) => { e.preventDefault(); this.damage(e); }); // preventDefault: 연타해도 글자가 선택되지 않게
+        this.clickable((e) => this.damage(e));
       }
       this.layout();
+    }
+    // 클릭 판정은 기준 프레임의 몸통 상자만 — 투명한 여백(꼬리 휘두르는 자리 등)이 뒤 캐릭터의 클릭을 가로채지 않게
+    clickable(fn) {
+      this.hb = document.createElement('b');
+      this.hb.className = 'hb';
+      this.el.append(this.hb);
+      this.hb.addEventListener('pointerdown', (e) => { e.preventDefault(); fn(e); }); // preventDefault: 연타해도 글자가 선택되지 않게
     }
     // 크기·기준점 계산 (화면 배율이 바뀌면 다시 호출)
     layout() {
@@ -46,6 +54,7 @@
       const e = this.el.style;
       e.bottom = 6 - this.d.foot * K + 'px';
       e.transformOrigin = this.d.ax * K + 'px 100%';
+      if (this.hb) { const [x, y, w, h] = this.d.hb; Object.assign(this.hb.style, { left: x * K + 'px', top: y * K + 'px', width: w * K + 'px', height: h * K + 'px' }); }
       this.play(...this.cur);
       this.put();
       void this.el.offsetWidth; // 시작 위치를 확정해야 첫 move 가 화면 밖에서 미끄러져 들어온다
@@ -103,12 +112,13 @@
       this.hit();
       if ((this.hp -= n) > 0) return;
       this.dead = true;
-      setSouls(souls + 1);
+      addSoul();
       this.el.style.opacity = 0;
       if (!this.keep) return void setTimeout(() => this.el.remove(), 550);
       setTimeout(() => { this.dead = false; this.hp = HP[this.name]; this.layout(); this.el.style.opacity = ''; }, 10000);
     }
     async vanish() {
+      this.dead = true; // 사라지는 중에는 클릭돼도 영혼불을 주지 않게
       this.el.style.opacity = 0;
       await sleep(550);
       this.el.remove();
@@ -122,6 +132,15 @@
     stage.append(s);
     setTimeout(() => s.remove(), 500);
   };
+  const fxAt = (x, y) => { // 효과를 담을 빈 상자 (무대 기준 x, 바닥에서 y)
+    const b = document.createElement('b');
+    b.className = 'fx';
+    b.style.cssText = `left:${x}px;bottom:${6 + y}px`;
+    stage.append(b);
+    return b;
+  };
+  // 몸통 중심 (무대 기준 x, 바닥에서 y)
+  const mid = (a) => [a.x, a.y + (a.d.h - a.d.foot - a.d.hb[1] - a.d.hb[3] / 2) * K];
   const sparkAt = (e) => { const r = stage.getBoundingClientRect(); spark(e.clientX - r.left, r.bottom - e.clientY - 6); };
 
   // ── 등장인물 ──────────────────────────────────────────
@@ -142,18 +161,66 @@
 
   const ambient = []; // 장면과 무관하게 떠다니는 캐릭터 (아래에서 채움)
 
-  // 영혼불: 게임처럼 최대 7개가 주인공 머리 위를 돈다
-  let souls = 0;
-  const ring = document.createElement('b');
-  ring.className = 'souls';
-  me.el.append(ring);
-  const setSouls = (n) => {
-    souls = Math.max(0, Math.min(7, n));
-    ring.style.setProperty('--r', 10 + souls * 3 + 'px');
-    ring.innerHTML = Array.from({ length: souls }, (_, i) => `<i style="--a:${i / souls}turn"></i>`).join('');
+  let inView = true;
+  new IntersectionObserver(([e]) => { inView = e.isIntersecting; }).observe(stage.parentElement);
+
+  // ── 영혼불 (게임 SoulFireManager · FX_SoulFire 와 같은 규칙) ─────────
+  // 최대 7개가 머리 위 190° 부채꼴로 늘어선다. 반지름 1.5 + 0.2×(개수-1) 유닛, 새 자리로는 초당 12유닛으로 이동.
+  // 소모·자연 감소는 오래된 것부터. 마지막 획득·소모 30초 뒤부터 10초마다 하나씩 사라진다.
+  // 1유닛 크기와 부채꼴 중심은 게임 영상에서 잰 값 (1유닛 = 주인공 키 × 0.31, 중심 = 발 위로 키 × 0.65)
+  const fires = []; // 오래된 것부터
+  const layer = document.createElement('b');
+  layer.className = 'souls';
+  me.el.append(layer);
+  const unit = () => 0.31 * me.d.hb[3] * K;
+  let lastSoul = 0, lastDecay = 0, decaying = false;
+  const arrange = () => {
+    const n = fires.length, u = unit(), r = (1.5 + 0.2 * (n - 1)) * u;
+    Object.assign(layer.style, { left: me.d.ax * K + 'px', bottom: (me.d.foot + 0.65 * me.d.hb[3]) * K + 'px' });
+    fires.forEach((f, i) => {
+      const a = (90 + (n === 1 ? 0 : -95 + (190 * i) / (n - 1))) * Math.PI / 180;
+      const x = Math.cos(a) * r, y = Math.sin(a) * r;
+      f.el.style.transition = `transform ${Math.hypot(x - f.x, y - f.y) / (12 * u)}s linear`;
+      f.x = x; f.y = y;
+      f.el.style.transform = `translate(${x}px,${-y}px)`;
+    });
   };
-  const placeRing = () => Object.assign(ring.style, { left: me.d.ax * K + 'px', bottom: (me.d.h - me.d.top + 14) * K + 'px' });
-  placeRing();
+  // 불꽃 파티클 하나: 0.7~2초 동안 플립북 20장을 한 번 재생, 크기 0 → 0.73(25%) → 1, 71% 이후 흐려짐
+  const flame = (f) => {
+    if (!lite && (!inView || document.hidden)) return;
+    const u = unit(), w = rnd(1.4, 2.8) * u, h = rnd(1.6, 2.4) * u, life = rnd(700, 2000);
+    const p = document.createElement('i');
+    p.style.cssText = `width:${w}px;height:${h}px;left:${rnd(-0.14, 0.14) * u - w / 2}px;top:${rnd(-0.08, 0.08) * u - h / 2}px;background-size:${20 * w}px ${h}px`;
+    f.el.append(p);
+    if (lite) return void (p.style.backgroundPositionX = -8 * w + 'px'); // 모션 줄이기: 한 장면만
+    p.animate({ backgroundPositionX: ['0px', -20 * w + 'px'] }, { duration: life, easing: 'steps(20)' });
+    p.animate([{ transform: 'scale(0)' }, { transform: 'scale(.73)', offset: 0.25 }, { opacity: 1, offset: 0.71 }, { transform: 'scale(1)', opacity: 0 }], { duration: life }).onfinish = () => p.remove();
+  };
+  const addSoul = () => {
+    if (fires.length >= 7) return;
+    const f = { el: document.createElement('b'), x: 0, y: 0 }; // 부채꼴 중심에서 생겨 자기 자리로 날아간다
+    layer.append(f.el);
+    flame(f);
+    if (!lite) f.timer = setInterval(() => flame(f), 333); // 초당 3개
+    fires.push(f);
+    lastSoul = Date.now(); decaying = false;
+    void f.el.offsetWidth;
+    arrange();
+  };
+  const dropSouls = (n, spent = true) => { // spent: 흡수(소모)면 감소 대기 시간을 다시 잰다
+    const k = Math.min(n, fires.length);
+    for (const f of fires.splice(0, k)) { clearInterval(f.timer); f.el.remove(); }
+    if (k && spent) { lastSoul = Date.now(); decaying = false; }
+    arrange();
+    return k;
+  };
+  setInterval(() => { // 자연 감소
+    const now = Date.now();
+    if (!fires.length || now - lastSoul < 30000 || (decaying && now - lastDecay < 10000)) return;
+    dropSouls(1, false);
+    decaying = true; lastDecay = now;
+  }, 1000);
+  arrange();
 
   addEventListener('resize', () => {
     measure();
@@ -161,14 +228,12 @@
     H.x = W * hiveX;
     if (G) G.x = W * golemX;
     [me, H, G, ...ambient].forEach((a) => a && a.layout());
-    placeRing();
+    arrange();
     if (G) G.el.style.display = showGolem() ? '' : 'none';
   });
   if (lite) return; // 모션 줄이기: 정지 포즈만
 
   // ── 연출 보조 ─────────────────────────────────────────
-  let inView = true;
-  new IntersectionObserver(([e]) => { inView = e.isIntersecting; }).observe(stage.parentElement);
   const gate = async () => { while (!inView || document.hidden) await sleep(400); };
 
   const goTo = async (a, x) => {
@@ -180,20 +245,20 @@
   const edge = (dir, m = 80) => (dir > 0 ? W + m * K : -m * K); // dir 쪽 화면 밖 (m: 캐릭터 폭만큼 여유)
 
   // ── 사용자 조작 ───────────────────────────────────────
-  // 주인공 클릭: 영혼불 -1, 다섯 번 맞으면 쓰러졌다가 화면 밖에서 다시 달려 들어온다
+  // 주인공 클릭: 영혼불 -1, 다섯 번 맞으면 쓰러졌다가(게임처럼 영혼불은 모두 사라짐) 화면 밖에서 다시 달려 들어온다
   const PLAYER_HP = 5;
   me.hp = PLAYER_HP;
-  me.el.classList.add('mob');
-  me.el.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    if (me.held) return; // 쓰러짐·강공격 중에는 무적
+  me.clickable((e) => {
+    if (me.held) return; // 쓰러짐·강화공격 중에는 무적
     sparkAt(e);
     me.hit();
-    setSouls(souls - 1);
+    dropSouls(1);
     if (--me.hp <= 0) die();
   });
+  me.layout();
   const die = async () => {
     me.held = true; cut++;
+    dropSouls(Infinity);
     await me.play('hurt', true);
     me.play('death', true);
     await sleep(1400);
@@ -209,33 +274,99 @@
     me.held = false;
   };
 
-  // 빈 곳을 꾹 누르면 그 자리로 달려가 강공격 — 양옆을 베어 주변 몹에게 3 피해
-  const slash = async (x) => {
-    me.held = true; cut++;
-    await goTo(me, Math.min(Math.max(x, 40 * K), W - 40 * K));
-    const done = me.play('strong', true);
-    await sleep(600); // 베는 프레임
-    for (const el of stage.querySelectorAll('.mob')) {
-      const m = el.actor;
-      if (m !== me && Math.abs(m.x - me.x) < 220 * K && m.y < 260 * K) m.damage(null, 3);
+  // 강화공격 (게임 PlayerController 와 같은 흐름): 영혼불이 3개 이상일 때 빈 곳을 0.25초 누르고 있으면
+  // 그 자리에서 영혼불 3개를 흡수하며 차지(AS + FX_Charging) → 손을 떼면 전방위 연속공격(Normal_AS_Attack + Slash_Aoe_Attack)
+  const HOLD = 250, COST = 3;
+  // FX_Charging: 반지름 6유닛 원에서 초록 빛줄기가 0.3초 만에 몸 중심으로 모여든다 (초당 30개)
+  const chargeFx = () => {
+    const [x, y] = mid(me), box = fxAt(x, y), u = unit();
+    const t = setInterval(() => {
+      const l = document.createElement('i');
+      l.className = 'cs';
+      l.style.width = 2.4 * u + 'px';
+      box.append(l);
+      const a = rnd(0, 360);
+      l.animate([
+        { transform: `rotate(${a}deg) translateX(${6 * u}px) scaleY(.57)`, opacity: 0 },
+        { opacity: 1, offset: 0.43 },
+        { transform: `rotate(${a}deg) translateX(0) scaleY(0)`, opacity: 0 },
+      ], { duration: 300 }).onfinish = () => l.remove();
+    }, 33);
+    return () => { clearInterval(t); setTimeout(() => box.remove(), 300); };
+  };
+  // Slash_Aoe_Attack (크기 3.5배): 0.04초마다 20번, 사방으로 도는 베기와 번쩍이는 선. 판정은 반지름 7유닛 안에 5 피해 × 10번(0.08초 간격)
+  const aoe = () => {
+    const [x, y] = mid(me), box = fxAt(x, y), u = unit();
+    for (let i = 0; i < 20; i++) {
+      setTimeout(() => {
+        const s = document.createElement('i'), z = 7 * u, a = rnd(0, 360);
+        s.className = 'sl';
+        s.style.cssText = `width:${z}px;height:${z}px;left:${rnd(-0.9, 0.9) * u - z / 2}px;top:${rnd(-0.9, 0.9) * u - z / 2}px;background-size:${9 * z}px ${z}px`;
+        box.append(s);
+        const sx = Math.cos(rnd(0, 6.28)).toFixed(2), sy = Math.cos(rnd(0, 6.28)).toFixed(2); // 3D 로 아무렇게나 돈 베기를 납작하게 본 모양
+        s.animate({ backgroundPositionX: ['0px', -9 * z + 'px'] }, { duration: 400, easing: 'steps(9)' });
+        s.animate([
+          { transform: `rotate(${a}deg) scale(${sx},${sy})`, filter: 'hue-rotate(0deg) brightness(3)' }, // 노랗게 번쩍 → 초록 → 청록으로 흐려짐
+          { filter: 'hue-rotate(0deg) brightness(1)', offset: 0.15 },
+          { filter: 'hue-rotate(40deg) brightness(.7)', opacity: 1, offset: 0.53 },
+          { transform: `rotate(${a + 96}deg) scale(${sx},${sy})`, filter: 'hue-rotate(40deg) brightness(.7)', opacity: 0 },
+        ], { duration: 400, easing: 'ease-out' }).onfinish = () => s.remove();
+        const l = document.createElement('i'), b = rnd(0, 360);
+        l.className = 'ln';
+        l.style.cssText = `width:${10 * u}px;left:${-5 * u}px`;
+        box.append(l);
+        l.animate([
+          { transform: `rotate(${b}deg) scale(0,0)`, color: '#fff' },
+          { color: '#fff', offset: 0.11 },
+          { transform: `rotate(${b}deg) scale(.77,1)`, color: '#000', offset: 0.15 },
+          { color: '#000', offset: 0.2 },
+          { color: '#dbffe6', offset: 0.22 },
+          { color: '#54ff78', offset: 0.33 },
+          { color: '#00a145', offset: 0.72 },
+          { transform: `rotate(${b}deg) scale(1,0)`, color: '#00a145' },
+        ], { duration: 300 }).onfinish = () => l.remove();
+      }, i * 40);
     }
-    await done;
-    me.play('idle');
-    me.held = false;
+    for (let i = 0; i < 10; i++) {
+      setTimeout(() => {
+        for (const el of stage.querySelectorAll('.mob')) {
+          const m = el.actor, [mx, my] = mid(m);
+          if (!m.el.offsetParent) continue; // 좁은 화면에서 숨긴 골렘
+          if (Math.hypot(mx - x, my - y) < 7 * u + Math.min(m.d.hb[2], m.d.hb[3]) * K / 2) m.damage(null, 5);
+        }
+      }, i * 80);
+    }
+    setTimeout(() => box.remove(), 1000);
   };
   const hero = stage.parentElement;
-  let press = 0, pressing = false, px = 0, py = 0;
+  let hold = 0, pressing = false, stopCharge = null, px = 0, py = 0;
   hero.addEventListener('pointerdown', (e) => {
-    if (e.button || e.target.closest('a, button, .mob')) return;
+    if (e.button || me.held || fires.length < COST || e.target.closest('a, button, .hb')) return;
     pressing = true; px = e.clientX; py = e.clientY;
     const x = e.clientX - stage.getBoundingClientRect().left;
-    press = setTimeout(() => { if (!me.held) slash(x); }, 450);
+    hold = setTimeout(() => {
+      if (me.held || fires.length < COST) return;
+      me.held = true; cut++;
+      me.turn(x > me.x ? 1 : -1);
+      me.play('charge');
+      dropSouls(COST);
+      stopCharge = chargeFx();
+    }, HOLD);
   });
-  const release = () => { pressing = false; clearTimeout(press); };
-  hero.addEventListener('pointerup', release);
-  hero.addEventListener('pointercancel', release);
-  hero.addEventListener('pointermove', (e) => { if (pressing && Math.hypot(e.clientX - px, e.clientY - py) > 12) release(); });
-  hero.addEventListener('contextmenu', (e) => { if (pressing) e.preventDefault(); }); // 모바일 길게 누르기 메뉴 막기
+  const release = async () => {
+    pressing = false; clearTimeout(hold);
+    if (!stopCharge) return;
+    stopCharge(); stopCharge = null;
+    aoe();
+    await me.play('burst', true);
+    me.play('idle');
+    await sleep(820); // 연속공격 이펙트가 끝날 때까지
+    me.held = false;
+  };
+  addEventListener('pointerup', release); // 화면 밖에서 손을 떼도 놓치지 않게 window 에서 받는다
+  addEventListener('pointercancel', release); // 차지가 시작됐으면 영혼불은 이미 쓴 것 — 취소돼도 공격은 나간다
+  hero.addEventListener('pointermove', (e) => { if (pressing && !stopCharge && Math.hypot(e.clientX - px, e.clientY - py) > 12) { pressing = false; clearTimeout(hold); } });
+  hero.addEventListener('contextmenu', (e) => { if (pressing || stopCharge) e.preventDefault(); }); // 모바일 길게 누르기 메뉴 막기
 
   // 장면과 상관없이 계속 떠다니는 날벌레와 하이브 정령(하이브 주변에 2마리 대기)
   const roam = async (a, xr, yr, speed) => { // xr·yr 은 호출 시점의 범위를 돌려주는 함수 (화면 크기가 바뀌어도 따라가도록)
@@ -276,7 +407,7 @@
       await charge;
       spark(tx + dir * 55 * K, 50 * K);
       bug.play('alert');
-      bug.move(tx + dir * 190 * K, 260);
+      bug.move(tx + dir * 190 * K, 260).catch(() => {}); // 그사이 쓰러지면 장면은 다음 호출에서 끝난다
       await parry;
       const atk = P.play('atk1', true);
       await sleep(180);

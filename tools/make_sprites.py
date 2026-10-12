@@ -75,6 +75,8 @@ ACTORS = {
     'strong': files(rng(f'{PLAYER}/Player_AS/F{{}}.png', 0, 18), 20),
     'hurt':   clip('Animations/Player/Stun'),
     'death':  clip('Animations/Player/Death'),
+    'charge': clip('Animations/Player/AS'),                # 강화공격 준비
+    'burst':  clip('Animations/Player/Normal_AS_Attack'),  # 강화공격 (전방위 연속공격 FX 와 함께)
   }),
   'bug': dict(scale=13.5, nearest=False, foot='walk', anims={
     'walk':  clip('Sprites/Eenmies_Sprites/moss_bug/Chase'),
@@ -152,14 +154,14 @@ for name, c in ACTORS.items():
     x0 = min(b[0] for b in bs); y0 = min(b[1] for b in bs); x1 = max(b[2] for b in bs); y1 = max(b[3] for b in bs)
     bw, bh = x1 - x0, y1 - y0
     k = c['scale'] / ref  # 원본 1px → 표시 px
-    foot, ax, top = 0, round(bw * k / 2), 0
+    ib = bs[sps.index(c['anims'][c['foot'] or next(iter(c['anims']))][0][0])]  # 기준 동작 첫 프레임의 몸통 위치
+    hb = [round((ib[0] - x0) * k), round((ib[1] - y0) * k), round((ib[2] - ib[0]) * k), round((ib[3] - ib[1]) * k)]  # 클릭 판정 상자 (x, y, w, h)
+    foot, ax = 0, round(bw * k / 2)
     if c['foot']:
-        ib = bs[sps.index(c['anims'][c['foot']][0][0])]  # 기준 동작 첫 프레임의 몸통 위치
         foot = round((y1 - ib[3]) * k)  # 가장 낮은 점과 발바닥 차이
         ax = round(((ib[0] + ib[2]) / 2 - x0) * k)  # 몸 중심 x (좌우 반전의 축)
-        top = round((ib[1] - y0) * k)  # 머리 꼭대기 y (주인공 영혼불 위치)
     res = ['-filter', 'point', '-resize', f'{k*100}%'] if c['nearest'] else ['-resize', f'{k*100}%']
-    out[name] = {'foot': foot, 'ax': ax, 'top': top}
+    out[name] = {'foot': foot, 'ax': ax, 'hb': hb}
     for an, fr in c['anims'].items():
         used = list(dict.fromkeys(sp for sp, _ in fr))  # 스트립에는 같은 프레임을 한 번만 넣는다
         dst = f'{IMG}/{name}-{an}.webp'
@@ -171,7 +173,20 @@ for name, c in ACTORS.items():
         w, h = map(int, sh('identify', '-format', '%w %h', dst).split())
         out[name][an] = {'src': f'assets/img/sprites/{name}-{an}.webp', 'w': w // len(used), 'h': h,
                          'f': [used.index(sp) for sp, _ in fr], 'd': [round(d, 3) for _, d in fr]}  # 재생 순서(프레임 번호)와 각 프레임 길이(초)
-    print(name, {a: (len(v['f']), v['w'], v['h'], round(sum(v['d']), 2)) for a, v in out[name].items() if a not in ('foot', 'ax', 'top')}, 'foot', foot, 'ax', ax, 'top', top)
+    print(name, {a: (len(v['f']), v['w'], v['h'], round(sum(v['d']), 2)) for a, v in out[name].items() if isinstance(v, dict)}, 'foot', foot, 'ax', ax, 'hb', hb)
+
+# ── 효과 텍스처: Unity 파티클의 플립북을 가로 한 줄로 펴고 셰이더 색을 미리 입힌다 ──
+def sheet(src, grid, size, dst, *color):
+    sh('magick', src, '-crop', f'{grid}@', '+repage', '-resize', f'{size}!', '+append', *color, '-quality', '82', dst)
+# 영혼불 (FX_SoulFire 의 Tx_Fire_ground_04 5×4 플립북): 알파 = a × 0.59 (파티클 시작 색).
+# 색은 게임 화면(영상)에서 잰 민트색 — 가운데(밝은 곳)일수록 살짝 하얗게
+sheet(f'{UA}/PlusAssets/Hun0FX/Textures/Tx_Fire_ground_04.png', '5x4', '80x80', f'{OUT}/assets/img/fx-soulfire.webp',
+      '-channel', 'B', '-fx', '0.6 + 0.12 * r * r * (3 - 2 * r)', '-channel', 'R', '-fx', '0.15 * r * r * (3 - 2 * r)',
+      '-channel', 'G', '-evaluate', 'set', '100%', '-channel', 'A', '-evaluate', 'multiply', '0.59', '+channel')
+# 강화공격 베기 (Slash_Aoe_Attack, 가산 혼합): 밝기 = 알파, 색은 파티클 그라디언트의 초록 (0.35, 1, 0)
+sheet(f'{UA}/NamuFX2/Simple Stylized Slash vol2/Textures/T_SlashSheet01.png', '3x3', '192x192', f'{OUT}/assets/img/fx-slash.webp',
+      '-alpha', 'off', '-colorspace', 'gray', '-alpha', 'copy', '-colorspace', 'sRGB', '-channel', 'R', '-evaluate', 'set', '35%',
+      '-channel', 'G', '-evaluate', 'set', '100%', '-channel', 'B', '-evaluate', 'set', '0', '+channel')
 
 for f in glob.glob(f'{IMG}/*.webp'):  # 더 이상 쓰지 않는 동작의 이미지 정리
     if os.path.basename(f)[:-5].split('-', 1)[1] not in out.get(os.path.basename(f).split('-')[0], {}): os.remove(f)

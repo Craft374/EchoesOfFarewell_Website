@@ -52,10 +52,15 @@ a{color:inherit}
 .actor{position:absolute;left:0;background:no-repeat 0 0;image-rendering:pixelated;will-change:transform;transition:opacity .5s}
 .actor.smooth{image-rendering:auto}
 .actor.hit{filter:brightness(2.2) saturate(.6)}
-.actor.mob{pointer-events:auto;cursor:pointer}
-.souls{position:absolute;animation:spin 6s linear infinite}
-.souls i{position:absolute;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:#eafff6;box-shadow:0 0 6px 2px var(--spirit);transform:rotate(var(--a)) translateX(var(--r))}
-@keyframes spin{to{transform:rotate(1turn)}}
+.hb{position:absolute;pointer-events:auto;cursor:pointer}
+.souls{position:absolute}
+.souls b{position:absolute}
+.souls i,.fx .sl{position:absolute;background:url("../assets/img/fx-soulfire.webp") no-repeat 0 0;image-rendering:auto}
+.fx{position:absolute;pointer-events:none}
+.fx .sl{background-image:url("../assets/img/fx-slash.webp");mix-blend-mode:plus-lighter}
+.fx .ln,.fx .cs{position:absolute;left:0;top:-1.5px;height:3px;transform-origin:0 50%}
+.fx .ln{transform-origin:50% 50%;background:linear-gradient(90deg,transparent,currentColor 30% 70%,transparent)}
+.fx .cs{background:linear-gradient(90deg,#00ff96,transparent)}
 .spark{position:absolute;width:44px;height:44px;margin:0 0 -22px -22px;animation:spark .45s ease-out forwards}
 .spark::before,.spark::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,#fff 0 14%,var(--spirit) 30%,transparent 62%)}
 .spark::after{transform:rotate(45deg) scale(.6,1.5);background:linear-gradient(90deg,transparent 40%,#fff 50%,transparent 60%)}
@@ -142,7 +147,6 @@ dialog::backdrop{background:rgba(0,0,0,.85)}
   .js .reveal{opacity:1;transform:none;transition:none}
 }
 .lite .spirits{display:none}
-.lite .souls{animation:none}
 
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 

@@ -51,8 +51,6 @@ a{color:inherit}
 .actor{position:absolute;left:0;background:no-repeat 0 0;image-rendering:pixelated;will-change:transform;transition:opacity .5s}
 .actor.smooth{image-rendering:auto}
 .actor.hit{filter:brightness(2.2) saturate(.6)}
-@keyframes cyc{to{background-position:var(--end) 0}}
-@keyframes cyc1{to{background-position:var(--end1) 0}}
 .spark{position:absolute;width:44px;height:44px;margin:0 0 -22px -22px;animation:spark .45s ease-out forwards}
 .spark::before,.spark::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,#fff 0 14%,var(--spirit) 30%,transparent 62%)}
 .spark::after{transform:rotate(45deg) scale(.6,1.5);background:linear-gradient(90deg,transparent 40%,#fff 50%,transparent 60%)}

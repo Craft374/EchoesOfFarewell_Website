@@ -23,8 +23,9 @@
       this.d = S[name];
       this.x = x; this.y = y; this.face = face;
       this.el = document.createElement('i');
-      this.el.className = 'actor' + (name === 'golem' || name === 'hive' ? ' smooth' : '');
+      this.el.className = 'actor' + (['golem', 'hive', 'bug'].includes(name) ? ' smooth' : '');
       stage.append(this.el);
+      for (const a of Object.values(this.d)) if (a.src) new Image().src = a.src; // 다음 동작 이미지를 미리 받아 둔다
       this.cur = [start || (this.d.idle ? 'idle' : 'fly'), false];
       this.layout();
     }
@@ -40,19 +41,25 @@
     put() {
       this.el.style.transform = `translate(${this.x - this.d.ax * K}px,${-this.y}px) scaleX(${this.face})`;
     }
-    // 동작 재생. once=true 면 마지막 프레임에서 멈춘다. 끝나는 시점에 풀리는 Promise 반환
+    // 동작 재생. a.f(프레임 번호)를 a.d(초)만큼씩 보여 준다 — Unity 애니메이션과 같은 타이밍.
+    // once=true 면 마지막 프레임에서 멈춘다. 끝나는 시점에 풀리는 Promise 반환
     play(anim, once = false) {
-      const a = this.d[anim], e = this.el, w = a.w * K;
+      const a = this.d[anim], e = this.el, w = a.w * K, n = Math.max(...a.f) + 1;
+      const T = a.d.reduce((s, d) => s + d, 0);
       this.cur = [anim, once];
-      Object.assign(e.style, { width: w + 'px', height: a.h * K + 'px', backgroundImage: `url(${a.src})`, backgroundSize: `${a.n * w}px ${a.h * K}px` });
-      e.style.setProperty('--end', -a.n * w + 'px');
-      e.style.setProperty('--end1', -(a.n - 1) * w + 'px');
-      e.style.animation = 'none';
-      void e.offsetWidth; // 애니메이션 처음부터 다시 시작
-      e.style.animation = a.n < 2 || lite ? 'none'
-        : once ? `cyc1 ${(a.n - 1) / a.fps}s steps(${a.n - 1}) forwards`
-        : `cyc ${a.n / a.fps}s steps(${a.n}) infinite`;
-      return sleep((a.n / a.fps) * 1000);
+      this.anim?.cancel();
+      Object.assign(e.style, { width: w + 'px', height: a.h * K + 'px', backgroundImage: `url(${a.src})`, backgroundSize: `${n * w}px ${a.h * K}px`, backgroundPositionX: -a.f[0] * w + 'px' });
+      if (a.f.length > 1 && !lite) {
+        let t = 0;
+        const kf = a.f.map((f, i) => {
+          const k = { offset: t / T, backgroundPositionX: -f * w + 'px', easing: 'step-end' };
+          t += a.d[i];
+          return k;
+        });
+        kf.push({ offset: 1, backgroundPositionX: kf.at(-1).backgroundPositionX });
+        this.anim = e.animate(kf, { duration: T * 1000, iterations: once ? 1 : Infinity, fill: 'forwards' });
+      }
+      return sleep(T * 1000);
     }
     turn(f) {
       if (f === this.face) return;
@@ -117,7 +124,7 @@
     await a.move(x, 300);
     a.play('idle');
   };
-  const edge = (dir) => (dir > 0 ? W + 80 * K : -80 * K); // dir 쪽 화면 밖
+  const edge = (dir, m = 80) => (dir > 0 ? W + m * K : -m * K); // dir 쪽 화면 밖 (m: 캐릭터 폭만큼 여유)
 
   // 장면과 상관없이 계속 떠다니는 날벌레와 하이브 정령(하이브 주변에 2마리 대기)
   const roam = async (a, xr, yr, speed) => { // xr·yr 은 호출 시점의 범위를 돌려주는 함수 (화면 크기가 바뀌어도 따라가도록)
@@ -141,15 +148,15 @@
 
   // ── 장면 ─────────────────────────────────────────────
   const scenes = {
-    // 땅벌레: 다가와서 몸을 말고 돌진 → 패링 → 반격
+    // 이끼벌레: 다가와서 몸을 말고 돌진 → 패링 → 반격
     async bug() {
       const dir = pick([1, -1]), tx = rnd(0.32, 0.68) * W;
       await goTo(P, tx);
       P.turn(dir);
       const bug = new Actor('bug', edge(dir), { face: -dir, start: 'walk' });
       await bug.move(tx + dir * 300 * K, 120);
-      bug.play('alert');
-      await sleep(800);
+      await bug.play('alert', true);
+      await bug.play('ready', true);
       const charge = bug.move(tx + dir * 95 * K, 520);
       bug.play('roll');
       await sleep(170);
@@ -174,7 +181,7 @@
       P.turn(dir);
       const f = new Actor('fairy', edge(dir), { y: 120 * K, face: -dir, start: 'fly' });
       await f.move(tx + dir * 230 * K, 170, 110 * K);
-      await sleep(500);
+      await f.play('ready', true);
       f.play('attack');
       const dive = f.move(tx + dir * 55 * K, 520, 30 * K);
       await sleep(130);
@@ -191,14 +198,40 @@
       f.el.remove();
     },
 
+    // 큰씨앗벌레(보스): 다가와 꼬리 휘두르기 → 패링 → 반격 → 물러남
+    async bigbug() {
+      const dir = pick([1, -1]), tx = rnd(0.35, 0.65) * W;
+      await goTo(P, tx);
+      P.turn(dir);
+      const b = new Actor('bigbug', edge(dir, 230), { face: -dir, start: 'walk' });
+      await b.move(tx + dir * 170 * K, 110);
+      b.play('idle');
+      await sleep(400);
+      const swing = b.play('attack', true); // A1: 1.17초에 꼬리를 휘두름
+      await sleep(910);
+      const parry = P.play('parry', true);
+      await sleep(260);
+      spark(tx + dir * 60 * K, 60 * K);
+      await parry;
+      const atk = P.play('atk1', true);
+      await sleep(180);
+      b.hit(); spark(tx + dir * 90 * K, 50 * K);
+      await Promise.all([atk, swing]);
+      P.play('idle');
+      b.turn(dir);
+      b.play('walk');
+      await b.move(edge(dir, 230), 150);
+      b.el.remove();
+    },
+
     // 골렘: 두 팔로 내려치는 공격 → 패링 → 연속 공격 → 강공격
     async golem() {
       const x = G.x - 200 * K;
       await goTo(P, x);
       P.turn(1);
       await sleep(400);
-      const slam = G.play('attack', true);
-      await sleep(330);
+      const slam = G.play('attack', true); // A3: 1.17초에 두 팔로 내려침
+      await sleep(900);
       const parry = P.play('parry', true);
       await sleep(260);
       spark(x + 70 * K, 55 * K);

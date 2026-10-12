@@ -31,7 +31,7 @@ a{color:inherit}
 .lang:hover{border-color:var(--spirit);color:var(--spirit)}
 
 /* hero */
-.hero{position:relative;min-height:calc(100svh - 53px);display:grid;place-items:center;overflow:hidden;isolation:isolate;text-align:center}
+.hero{position:relative;min-height:calc(100svh - 53px);display:grid;place-items:center;overflow:hidden;isolation:isolate;text-align:center;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none} /* 꾹 누르기 강공격 때 글자 선택·메뉴 방지 */
 .hero-bg{position:absolute;inset:-6%;background:url("../assets/img/hero-bg.webp") center/cover;filter:brightness(.38) saturate(.8);z-index:-3;will-change:transform}
 .hero-vig{position:absolute;inset:0;z-index:-2;background:radial-gradient(ellipse at 50% 42%,transparent 25%,var(--bg) 100%),linear-gradient(transparent 70%,var(--bg))}
 .hero-body{padding:0 16px 150px;will-change:transform;pointer-events:none}
@@ -53,6 +53,9 @@ a{color:inherit}
 .actor.smooth{image-rendering:auto}
 .actor.hit{filter:brightness(2.2) saturate(.6)}
 .actor.mob{pointer-events:auto;cursor:pointer}
+.souls{position:absolute;animation:spin 6s linear infinite}
+.souls i{position:absolute;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:#eafff6;box-shadow:0 0 6px 2px var(--spirit);transform:rotate(var(--a)) translateX(var(--r))}
+@keyframes spin{to{transform:rotate(1turn)}}
 .spark{position:absolute;width:44px;height:44px;margin:0 0 -22px -22px;animation:spark .45s ease-out forwards}
 .spark::before,.spark::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,#fff 0 14%,var(--spirit) 30%,transparent 62%)}
 .spark::after{transform:rotate(45deg) scale(.6,1.5);background:linear-gradient(90deg,transparent 40%,#fff 50%,transparent 60%)}
@@ -139,6 +142,7 @@ dialog::backdrop{background:rgba(0,0,0,.85)}
   .js .reveal{opacity:1;transform:none;transition:none}
 }
 .lite .spirits{display:none}
+.lite .souls{animation:none}
 
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 

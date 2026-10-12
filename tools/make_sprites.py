@@ -73,6 +73,8 @@ ACTORS = {
     'atk2':   files(rng(f'{PLAYER}/Player_A3/F{{}}.png', 0, 4), 14),
     'parry':  files([f'{PLAYER}/Player_Parry_New/Player_Parry_New_{i:04d}.png' for i in range(11)], 18),
     'strong': files(rng(f'{PLAYER}/Player_AS/F{{}}.png', 0, 18), 20),
+    'hurt':   clip('Animations/Player/Stun'),
+    'death':  clip('Animations/Player/Death'),
   }),
   'bug': dict(scale=13.5, nearest=False, foot='walk', anims={
     'walk':  clip('Sprites/Eenmies_Sprites/moss_bug/Chase'),
@@ -150,13 +152,14 @@ for name, c in ACTORS.items():
     x0 = min(b[0] for b in bs); y0 = min(b[1] for b in bs); x1 = max(b[2] for b in bs); y1 = max(b[3] for b in bs)
     bw, bh = x1 - x0, y1 - y0
     k = c['scale'] / ref  # 원본 1px → 표시 px
-    foot, ax = 0, round(bw * k / 2)
+    foot, ax, top = 0, round(bw * k / 2), 0
     if c['foot']:
         ib = bs[sps.index(c['anims'][c['foot']][0][0])]  # 기준 동작 첫 프레임의 몸통 위치
         foot = round((y1 - ib[3]) * k)  # 가장 낮은 점과 발바닥 차이
         ax = round(((ib[0] + ib[2]) / 2 - x0) * k)  # 몸 중심 x (좌우 반전의 축)
+        top = round((ib[1] - y0) * k)  # 머리 꼭대기 y (주인공 영혼불 위치)
     res = ['-filter', 'point', '-resize', f'{k*100}%'] if c['nearest'] else ['-resize', f'{k*100}%']
-    out[name] = {'foot': foot, 'ax': ax}
+    out[name] = {'foot': foot, 'ax': ax, 'top': top}
     for an, fr in c['anims'].items():
         used = list(dict.fromkeys(sp for sp, _ in fr))  # 스트립에는 같은 프레임을 한 번만 넣는다
         dst = f'{IMG}/{name}-{an}.webp'
@@ -168,7 +171,7 @@ for name, c in ACTORS.items():
         w, h = map(int, sh('identify', '-format', '%w %h', dst).split())
         out[name][an] = {'src': f'assets/img/sprites/{name}-{an}.webp', 'w': w // len(used), 'h': h,
                          'f': [used.index(sp) for sp, _ in fr], 'd': [round(d, 3) for _, d in fr]}  # 재생 순서(프레임 번호)와 각 프레임 길이(초)
-    print(name, {a: (len(v['f']), v['w'], v['h'], round(sum(v['d']), 2)) for a, v in out[name].items() if a not in ('foot', 'ax')}, 'foot', foot, 'ax', ax)
+    print(name, {a: (len(v['f']), v['w'], v['h'], round(sum(v['d']), 2)) for a, v in out[name].items() if a not in ('foot', 'ax', 'top')}, 'foot', foot, 'ax', ax, 'top', top)
 
 for f in glob.glob(f'{IMG}/*.webp'):  # 더 이상 쓰지 않는 동작의 이미지 정리
     if os.path.basename(f)[:-5].split('-', 1)[1] not in out.get(os.path.basename(f).split('-')[0], {}): os.remove(f)

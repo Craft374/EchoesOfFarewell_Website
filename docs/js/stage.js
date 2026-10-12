@@ -32,7 +32,7 @@
       this.el.actor = this; // 강화공격 범위 판정용
       this.el.className = 'actor' + (['golem', 'hive', 'bug'].includes(name) ? ' smooth' : '');
       stage.append(this.el);
-      if (!lite) for (const a of Object.values(this.d)) if (a.src) new Image().src = a.src; // 다음 동작 이미지를 미리 받아 둔다 (lite 는 첫 장면만 보여 줌)
+      this.el.style.backgroundImage = `url(${this.d.src})`; // 모든 동작이 한 장(격자)에 있어 동작이 바뀌어도 이미지는 그대로
       this.cur = [start || (this.d.idle ? 'idle' : 'fly'), false];
       if (HP[name]) {
         this.hp = HP[name];
@@ -62,23 +62,24 @@
     put() {
       this.el.style.transform = `translate(${this.x - this.d.ax * K}px,${-this.y}px) scaleX(${this.face})`;
     }
-    // 동작 재생. a.f(프레임 번호)를 a.d(초)만큼씩 보여 준다 — Unity 애니메이션과 같은 타이밍.
+    // 동작 재생. a.f(격자 안 프레임 번호)를 a.d(초)만큼씩 보여 준다 — Unity 애니메이션과 같은 타이밍.
     // once=true 면 마지막 프레임에서 멈춘다. 끝나는 시점에 풀리는 Promise 반환
     play(anim, once = false) {
       this.live();
-      const a = this.d[anim], e = this.el, w = a.w * K, n = Math.max(...a.f) + 1;
-      const T = a.d.reduce((s, d) => s + d, 0);
+      const d = this.d, a = d[anim], e = this.el, w = d.w * K, h = d.h * K;
+      const at = (f) => `${-(f % d.cols) * w}px ${-Math.floor(f / d.cols) * h}px`;
+      const T = a.d.reduce((s, x) => s + x, 0);
       this.cur = [anim, once];
       this.anim?.cancel();
-      Object.assign(e.style, { width: w + 'px', height: a.h * K + 'px', backgroundImage: `url(${a.src})`, backgroundSize: `${n * w}px ${a.h * K}px`, backgroundPositionX: -a.f[0] * w + 'px' });
+      Object.assign(e.style, { width: w + 'px', height: h + 'px', backgroundSize: `${d.cols * w}px ${d.rows * h}px`, backgroundPosition: at(a.f[0]) });
       if (a.f.length > 1 && !lite) {
         let t = 0;
         const kf = a.f.map((f, i) => {
-          const k = { offset: t / T, backgroundPositionX: -f * w + 'px', easing: 'step-end' };
+          const k = { offset: t / T, backgroundPosition: at(f), easing: 'step-end' };
           t += a.d[i];
           return k;
         });
-        kf.push({ offset: 1, backgroundPositionX: kf.at(-1).backgroundPositionX });
+        kf.push({ offset: 1, backgroundPosition: kf.at(-1).backgroundPosition });
         this.anim = e.animate(kf, { duration: T * 1000, iterations: once ? 1 : Infinity, fill: 'forwards' });
       }
       return sleep(T * 1000);
@@ -304,13 +305,15 @@
         s.className = 'sl';
         s.style.cssText = `width:${z}px;height:${z}px;left:${rnd(-0.9, 0.9) * u - z / 2}px;top:${rnd(-0.9, 0.9) * u - z / 2}px;background-size:${9 * z}px ${z}px`;
         box.append(s);
-        const sx = Math.cos(rnd(0, 6.28)).toFixed(2), sy = Math.cos(rnd(0, 6.28)).toFixed(2); // 3D 로 아무렇게나 돈 베기를 납작하게 본 모양
+        // 3D 로 아무렇게나 기운 고리를 정면에서 본 모양: 고리는 자기 면 안에서 돌고(spin), 그 면이 납작하게 보인다(scale) → 화면에선 고정된 타원을 따라 베기가 미끄러진다
+        const sx = Math.cos(rnd(0, 6.28)).toFixed(2), sy = Math.cos(rnd(0, 6.28)).toFixed(2), spin = rnd(0, 360);
+        const tf = (r) => `rotate(${a}deg) scale(${sx},${sy}) rotate(${r}deg)`;
         s.animate({ backgroundPositionX: ['0px', -9 * z + 'px'] }, { duration: 400, easing: 'steps(9)' });
         s.animate([
-          { transform: `rotate(${a}deg) scale(${sx},${sy})`, filter: 'hue-rotate(0deg) brightness(3)' }, // 노랗게 번쩍 → 초록 → 청록으로 흐려짐
+          { transform: tf(spin), filter: 'hue-rotate(0deg) brightness(3)' }, // 노랗게 번쩍 → 초록 → 청록으로 흐려짐
           { filter: 'hue-rotate(0deg) brightness(1)', offset: 0.15 },
           { filter: 'hue-rotate(40deg) brightness(.7)', opacity: 1, offset: 0.53 },
-          { transform: `rotate(${a + 96}deg) scale(${sx},${sy})`, filter: 'hue-rotate(40deg) brightness(.7)', opacity: 0 },
+          { transform: tf(spin + 96), filter: 'hue-rotate(40deg) brightness(.7)', opacity: 0 },
         ], { duration: 400, easing: 'ease-out' }).onfinish = () => s.remove();
         const l = document.createElement('i'), b = rnd(0, 360);
         l.className = 'ln';

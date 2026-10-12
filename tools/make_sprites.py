@@ -6,7 +6,7 @@
 캐릭터마다 '같은 잘라내기 상자'로 잘라 기준점을 통일합니다. (프레임마다 따로 자르면 동작이 바뀔 때 몸이 흔들립니다.)
 실행: python3 tools/make_sprites.py
 """
-import glob, json, os, re, subprocess, tempfile
+import glob, json, math, os, re, subprocess, tempfile
 
 G = os.environ.get('EOF_GITHUB', '/Users/jeongwoo/Documents/Github')  # 게임 저장소가 있는 폴더
 UA = f'{G}/EchoesOfFarewell/Assets'
@@ -161,19 +161,19 @@ for name, c in ACTORS.items():
         foot = round((y1 - ib[3]) * k)  # 가장 낮은 점과 발바닥 차이
         ax = round(((ib[0] + ib[2]) / 2 - x0) * k)  # 몸 중심 x (좌우 반전의 축)
     res = ['-filter', 'point', '-resize', f'{k*100}%'] if c['nearest'] else ['-resize', f'{k*100}%']
-    out[name] = {'foot': foot, 'ax': ax, 'hb': hb}
-    for an, fr in c['anims'].items():
-        used = list(dict.fromkeys(sp for sp, _ in fr))  # 스트립에는 같은 프레임을 한 번만 넣는다
-        dst = f'{IMG}/{name}-{an}.webp'
-        tmp = []
-        for i, sp in enumerate(used):
-            tmp.append(f'{TMP}/{name}_{an}_{i}.png')
-            sh('magick', placed[sps.index(sp)], '-crop', f'{bw}x{bh}+{x0}+{y0}', '+repage', *res, tmp[-1])
-        sh('magick', *tmp, '+append', '-define', 'webp:lossless=true', dst)
-        w, h = map(int, sh('identify', '-format', '%w %h', dst).split())
-        out[name][an] = {'src': f'assets/img/sprites/{name}-{an}.webp', 'w': w // len(used), 'h': h,
-                         'f': [used.index(sp) for sp, _ in fr], 'd': [round(d, 3) for _, d in fr]}  # 재생 순서(프레임 번호)와 각 프레임 길이(초)
-    print(name, {a: (len(v['f']), v['w'], v['h'], round(sum(v['d']), 2)) for a, v in out[name].items() if isinstance(v, dict)}, 'foot', foot, 'ax', ax, 'hb', hb)
+    # 캐릭터의 모든 프레임을 한 장(격자)에 모은다 — 동작이 바뀔 때 이미지를 갈아 끼우면 새 이미지가 그려지기 전 한순간 비어 깜빡인다
+    tmp = []
+    for i, sp in enumerate(sps):
+        tmp.append(f'{TMP}/{name}_f{i}.png')
+        sh('magick', placed[i], '-crop', f'{bw}x{bh}+{x0}+{y0}', '+repage', *res, tmp[-1])
+    w, h = map(int, sh('identify', '-format', '%w %h', tmp[0]).split())
+    cols = math.ceil(math.sqrt(len(sps)))
+    rows = [tmp[i:i + cols] for i in range(0, len(tmp), cols)]
+    sh('magick', '-background', 'none', *sum([['(', *r, '+append', ')'] for r in rows], []), '-append', '-define', 'webp:lossless=true', f'{IMG}/{name}.webp')
+    out[name] = {'foot': foot, 'ax': ax, 'hb': hb, 'src': f'assets/img/sprites/{name}.webp', 'w': w, 'h': h, 'cols': cols, 'rows': len(rows)}
+    for an, fr in c['anims'].items():  # 동작 = 재생 순서(격자 안 프레임 번호)와 각 프레임 길이(초)
+        out[name][an] = {'f': [sps.index(sp) for sp, _ in fr], 'd': [round(d, 3) for _, d in fr]}
+    print(name, len(sps), 'frames', w, h, 'grid', cols, len(rows), 'foot', foot, 'ax', ax, 'hb', hb)
 
 # ── 효과 텍스처: Unity 파티클의 플립북을 가로 한 줄로 펴고 셰이더 색을 미리 입힌다 ──
 def sheet(src, grid, size, dst, *color):
@@ -191,7 +191,7 @@ sh('magick', f'{UA}/NamuFX2/Simple Stylized Slash vol2/Textures/T_SlashSheet01.p
    '-define', f'distort:viewport={2 * R}x{2 * R}-{R}-{R}', '-distort', 'Arc', f'225 0 {R} {round(R * 0.475)}', '+repage',
    '+append', '-quality', '82', f'{OUT}/assets/img/fx-slash.webp')
 
-for f in glob.glob(f'{IMG}/*.webp'):  # 더 이상 쓰지 않는 동작의 이미지 정리
-    if os.path.basename(f)[:-5].split('-', 1)[1] not in out.get(os.path.basename(f).split('-')[0], {}): os.remove(f)
+for f in glob.glob(f'{IMG}/*.webp'):  # 예전 동작별 이미지 등 쓰지 않는 파일 정리
+    if os.path.basename(f)[:-5] not in out: os.remove(f)
 
 open(f'{OUT}/js/sprites.js', 'w').write('// tools/make_sprites.py 로 생성됨 — 직접 수정하지 마세요\nwindow.SPRITES = ' + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ';\n')

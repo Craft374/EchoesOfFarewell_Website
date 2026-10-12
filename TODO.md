@@ -7,8 +7,9 @@
 - [ ] `docs/index.html` 의 `#dl-win`, `#dl-mac` 버튼 `href="#"` 를 각 공유 링크로 교체
   (교체하면 "준비 중" 표시가 자동으로 사라집니다)
 
-## 2. (보류) 플레이 후기 구글 폼 · 팀원 소개
-- 지금은 사이트에서 뺐습니다. 준비되면 말씀해 주세요. 문의는 이메일(leejeongwoo1103@gmail.com)로 받습니다.
+## 2. 플레이 후기 구글 폼 — 완료 / 팀원 소개 — 보류
+- 후기 폼(https://forms.gle/ixTq9JHmvwYqbg5D6)은 `#contact` 의 `#feedback` 버튼에 연결됨. 폼 생성 스크립트는 `GOOGLE_FORM.md`.
+- 팀원 소개는 준비되면 말씀해 주세요.
 
 ## 3. 도메인 — 완료
 - `echoes-of-farewell.kro.kr` 가 대표 주소이고, `echoesoffarewell.kro.kr`, `eof.r-e.kr` 은 대표 주소로 이동합니다.

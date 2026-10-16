@@ -102,6 +102,8 @@ h3{font:26px/1.3 var(--pix);font-weight:400;margin:8px 0 12px}
 .keys{list-style:none;padding:0}
 .keys li{display:flex;align-items:center;gap:18px;padding:12px 0;border-bottom:1px solid var(--line)}
 .kc{display:flex;gap:6px;min-width:128px}
+.pad-h{margin-top:40px}
+.pad-note{color:var(--muted);font-size:14px;margin-top:12px}
 kbd{font:15px var(--pix);color:var(--text);background:var(--surface);border:2px solid var(--muted);border-bottom-width:4px;padding:3px 10px;white-space:nowrap}
 
 .dl{text-align:center}

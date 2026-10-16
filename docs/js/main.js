@@ -29,10 +29,12 @@
   // 갤러리 + 라이트박스
   const shots = $('#shots');
   const lb = $('#lb');
+  // 실제 세로 크기(가로는 모두 1280) — 지연 로딩 시 레이아웃이 밀려 앵커 위치가 틀어지지 않게 자리를 미리 잡는다
+  const hs = [1217, 1148, 906, 859, 923, 856, 1110, 1017, 1013, 1081, 969, 1172];
   for (let i = 1; i <= 12; i++) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.innerHTML = `<img src="assets/img/shots/s${i}.webp" alt="Gameplay screenshot ${i}" loading="lazy">`;
+    b.innerHTML = `<img src="assets/img/shots/s${i}.webp" alt="Gameplay screenshot ${i}" width="1280" height="${hs[i - 1]}" loading="lazy">`;
     b.onclick = () => { const im = $('img', lb); im.src = `assets/img/shots/s${i}.webp`; im.alt = $('img', b).alt; lb.showModal(); };
     shots.append(b);
   }
